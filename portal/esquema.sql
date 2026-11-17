@@ -290,7 +290,7 @@ BEGIN
             END IF;
         END IF;
         -- capturas del chat (hasta 3, las mas recientes) para que el celular las comparta junto con el resumen
-        RETURN jsonb_build_object('ok', true, 'ticket', mid, 'whatsapp', '51940455332', 'resumen', left(resumen, 1700),
+        RETURN jsonb_build_object('ok', true, 'ticket', mid, 'whatsapp', '51949882756', 'resumen', left(resumen, 1700),
           'caso', (SELECT enlace FROM tickets WHERE id = mid),
           'capturas', coalesce((SELECT jsonb_agg(imagen) FROM (SELECT c.imagen FROM capturas_chat c JOIN mensajes m ON m.id = c.mensaje_id
                                  WHERE m.conversacion_id = conv ORDER BY m.id DESC LIMIT 3) x), '[]'::jsonb));

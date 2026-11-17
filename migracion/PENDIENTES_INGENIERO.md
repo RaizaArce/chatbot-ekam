@@ -44,7 +44,7 @@ puede bloquear una cuenta ajena 10 minutos con cinco intentos fallidos.
 | Imágenes de los manuales | `navasoft-img` y `navasoft-pagina` se abren sin sesión con el enlace | Si es aceptable o deben exigir sesión |
 | Traefik | Usa `traefik` sin versión | Fijar una versión probada |
 | Carga de manuales | `migracion/sincronizar_nube.ps1` corre en la laptop con una llave de root sin frase de seguridad | Mover la carga al servidor o usar un acceso con menos permisos |
-| WhatsApp de soporte | El cliente pulsa enviar; el número 940455332 es de prueba | Número definitivo; API de WhatsApp Business si se quieren avisos automáticos |
+| WhatsApp de soporte | **Hecho (17/11):** número definitivo +51 949 882 756. El cliente pulsa enviar | Número definitivo; API de WhatsApp Business si se quieren avisos automáticos |
 | Repositorio | Público en GitHub (RaizaArce/chatbot-ekam), una sola versión sin historial | El historial completo queda en la rama `master` local: no subirlo |
 | Plan del VPS | Vence el 28/11/2026 | Confirmar la renovación |
 
