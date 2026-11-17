@@ -1,0 +1,35 @@
+# Procesador de manuales: se instala en /docker/navasoft/procesador del servidor (migracion/desplegar_procesador.ps1).
+# Traefik le pasa https://n8n.srv2106635.hstgr.cloud/navasoft-procesador/... (mismo dominio que el portal).
+services:
+  procesador:
+    build: .
+    container_name: navasoft-procesador
+    restart: unless-stopped
+    mem_limit: 1536m
+    cpus: 1.5
+    env_file: ../.env            # POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB de la base del asistente
+    environment:
+      POSTGRES_HOST: navasoft-db
+      POSTGRES_PORT: "5432"
+      OLLAMA_URL: http://navasoft-ollama:11434
+      URL_PUBLICA: https://n8n.srv2106635.hstgr.cloud/webhook
+    volumes:
+      - navasoft-manuales:/data
+    networks:
+      - n8n_default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=n8n_default
+      - traefik.http.routers.navasoft-procesador.rule=Host(`n8n.srv2106635.hstgr.cloud`) && PathPrefix(`/navasoft-procesador`)
+      - traefik.http.routers.navasoft-procesador.priority=100
+      - traefik.http.routers.navasoft-procesador.entrypoints=websecure
+      - traefik.http.routers.navasoft-procesador.tls=true
+      - traefik.http.routers.navasoft-procesador.tls.certresolver=mytlschallenge
+      - traefik.http.services.navasoft-procesador.loadbalancer.server.port=8080
+
+volumes:
+  navasoft-manuales:
+
+networks:
+  n8n_default:
+    external: true

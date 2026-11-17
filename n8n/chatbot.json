@@ -1,0 +1,611 @@
+{
+  "name": "NAVASOFT - Chatbot de ayuda",
+  "nodes": [
+    {
+      "id": "a1",
+      "name": "Consulta interna",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "navasoft-asistente",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Iyeq5i9Mwwa1eGM",
+          "name": "Clave interna NAVASOFT"
+        }
+      },
+      "webhookId": "4e8b2c71-9a3d-4f60-b5e2-7c1d0a9f3e58"
+    },
+    {
+      "id": "b1",
+      "name": "Historial reciente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT rol, texto FROM (\n  SELECT id, rol, texto FROM mensajes WHERE conversacion_id::text = $1 ORDER BY id DESC LIMIT 9\n) t ORDER BY id",
+        "options": {
+          "queryReplacement": "={{ [ String($json.body.sessionId || '') ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SqW5cZj7KdT9Lbyu",
+          "name": "Base de datos NAVASOFT"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "b2",
+      "name": "Preparar búsqueda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const consulta = $('Consulta interna').first().json.body || {};\nconst pregunta = String(consulta.chatInput || '').trim();\nlet hist = $input.all().map((i) => i.json).filter((m) => m && m.rol);\n// el portal ya guardo la pregunta actual en el historial: se quita para no repetirla\nconst ultimo = hist[hist.length - 1];\nif (ultimo && ultimo.rol === 'usuario' && ultimo.texto.trim() === pregunta) hist.pop();\nhist = hist.slice(-8);\n// si es una pregunta de seguimiento (\"y luego?\", \"ya lo hice\"), se busca junto con la anterior\nconst anteriores = hist.filter((m) => m.rol === 'usuario').map((m) => m.texto);\nconst seguimiento = hist.length > 0 && (pregunta.length < 25 ||\n  /^(¿?\\s*y\\b|entonces|luego|despu[eé]s|eso|esa|ese|esto|ok|vale|bien|listo|ya\\b|contin|sigue|siguiente|qu[eé] (m[aá]s|sigue|procede)|y\\s+si)/i.test(pregunta));\nconst busqueda = seguimiento && anteriores.length ? anteriores[anteriores.length - 1] + ' ' + pregunta : pregunta;\n// todas las paginas que ya se citaron en la conversacion: en un seguimiento se leen las que siguen\nconst urlsPagina = (t) => t.match(/https?:\\/\\/[^\\s)>]+\\/navasoft-pagina\\?id=[0-9a-f]{12}/g) || [];\nconst citadas = seguimiento ? [...new Set(hist.filter((m) => m.rol === 'bot').flatMap((m) => urlsPagina(m.texto)))] : [];\nconst limpiar = (t, n) => t.replace(/!\\[[^\\]]*\\]\\([^)]+\\)/g, '').replace(/\\]\\([^)]+\\)/g, ']')\n  .replace(/\\[\\[sugerencias:[^\\]]*\\]\\]/g, '').replace(/\\s+/g, ' ').slice(0, n);\n// la ultima respuesta va casi completa: asi la IA sabe que pasos ya dio y no los repite\nconst ultimaBot = hist.map((m) => m.rol).lastIndexOf('bot');\nconst historial = hist.map((m, i) => (m.rol === 'usuario' ? 'Cliente: ' + limpiar(m.texto, 400)\n  : 'Asistente: ' + limpiar(m.texto, i === ultimaBot ? 2000 : 600))).join('\\n');\n// clave para respuestas guardadas: pregunta en minusculas, sin tildes ni signos\nconst clave = pregunta.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9ñ ]/g, ' ').replace(/\\s+/g, ' ').trim();\n// ¿pide el indice de un manual o la lista de manuales? (\"muestrame los temas de Ventas\", \"que manuales hay\")\nconst pideIndice = (/\\b(temas|indice|contenido|secciones|capitulos)\\b/.test(clave) && /\\b(manual|manuales|guia|temas de|temas del|que temas|cuales temas)\\b|temas d/.test(clave))\n  || /\\b(que|cuales) manuales\\b|\\blista de manuales\\b|\\bmanuales (hay|tienes|disponibles)\\b/.test(clave);\nconst VACIAS = new Set(['manual', 'manuales', 'temas', 'tema', 'indice', 'contenido', 'muestrame', 'mostrar', 'muestra', 'cuales',\n  'tiene', 'tienes', 'trae', 'incluye', 'guia', 'sobre', 'quiero', 'puedes', 'lista', 'secciones', 'capitulos', 'dame', 'dime',\n  'hay', 'disponibles', 'para', 'este', 'esta', 'todos', 'todas', 'ensename', 'conocer', 'saber']);\nconst palabras = clave.split(' ').filter((w) => w.length >= 4 && !VACIAS.has(w)).join(' ');\nreturn [{ json: { pregunta, busqueda, historial, citadas: citadas.join(',') || 'ninguna', clave: clave || 'vacia',\n  primera: hist.length === 0 ? 'si' : 'no', indice: pideIndice ? 'si' : 'no', palabras: palabras || 'ninguna' } }];"
+      }
+    },
+    {
+      "id": "d1",
+      "name": "¿Pide el índice?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "i1",
+              "leftValue": "={{ $json.indice }}",
+              "rightValue": "si",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d2",
+      "name": "Índice del manual",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        760,
+        -320
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH q AS (\n  SELECT w FROM unnest(string_to_array($1, ' ')) AS w WHERE length(w) >= 4\n), m AS (\n  SELECT metadata->>'manual' AS manual, metadata->>'archivo' AS archivo FROM chunks_bge_m3\n  WHERE metadata->>'pagina' IS NOT NULL GROUP BY 1, 2\n), puntaje AS (\n  SELECT m.manual, m.archivo, count(q.w) AS p FROM m\n  JOIN q ON translate(lower(m.manual), 'áéíóúñ', 'aeioun') LIKE '%' || q.w || '%' GROUP BY 1, 2\n), mejor AS (\n  -- ante un empate se prefiere el manual principal (\"Manual de Ventas\" antes que la guia \"Costo de ventas\")\n  SELECT manual, archivo FROM puntaje ORDER BY p DESC, (manual ILIKE 'Manual de%') DESC, length(manual) LIMIT 1\n)\nSELECT 'elegido' AS tipo, mejor.manual, NULL AS numero, NULL AS titulo, NULL::int AS pagina,\n       (SELECT c.metadata->>'pagina_url' FROM chunks_bge_m3 c WHERE c.metadata->>'archivo' = mejor.archivo\n         AND c.metadata->>'pagina' IS NOT NULL ORDER BY (c.metadata->>'pagina')::int LIMIT 1) AS pagina_url, -1 AS orden\n  FROM mejor\nUNION ALL\nSELECT 'tema', i.manual, i.numero, i.titulo, i.pagina, i.pagina_url, i.orden\n  FROM manual_indice i JOIN mejor ON i.archivo = mejor.archivo\nUNION ALL\nSELECT 'manual', m.manual, NULL, NULL, NULL, NULL, 0 FROM m WHERE NOT EXISTS (SELECT 1 FROM mejor)\nORDER BY orden, manual",
+        "options": {
+          "queryReplacement": "={{ [ $json.palabras ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SqW5cZj7KdT9Lbyu",
+          "name": "Base de datos NAVASOFT"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "d3",
+      "name": "Responder índice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        -320
+      ],
+      "parameters": {
+        "jsCode": "const filas = $input.all().map((i) => i.json).filter((f) => f && f.tipo);\nconst elegido = filas.find((f) => f.tipo === 'elegido');\nlet out = '', sug = [];\nif (elegido) {\n  const temas = filas.filter((f) => f.tipo === 'tema');\n  out = `📚 **Temas del ${elegido.manual}**\\n\\n`;\n  if (!temas.length) {\n    out += `Esta guía trata un solo tema. Puedes verla desde su primera página: [${elegido.manual}](${elegido.pagina_url}).\\n\\nCuéntame qué necesitas hacer y te explico los pasos.`;\n  } else {\n    for (const t of temas) {\n      const enlace = t.pagina_url ? `[${t.numero ? t.numero + ' ' : ''}${t.titulo}](${t.pagina_url}) · pág. ${t.pagina}` : `${t.numero} ${t.titulo}`;\n      out += (!t.numero || !t.numero.includes('.')) ? `\\n**${t.numero ? t.numero + '. ' : ''}${t.titulo}** · [pág. ${t.pagina}](${t.pagina_url})\\n` : `- ${enlace}\\n`;\n    }\n    out += '\\nEscríbeme el tema que te interesa y te explico los pasos.';\n    const corto = elegido.manual.replace(/^(Manual de|guia)\\s+/i, '').replace(/\\s+V5$/i, '');\n    sug = temas.filter((t) => t.numero && t.numero.includes('.') && !/interfaz/i.test(t.titulo)).slice(0, 3)\n      .map((t) => `Explícame: ${t.titulo} (${corto})`);\n  }\n} else {\n  const manuales = filas.filter((f) => f.tipo === 'manual').map((f) => f.manual);\n  out = '📚 **Manuales disponibles**\\n\\n' + manuales.map((m) => `- ${m}`).join('\\n') + '\\n\\n¿De cuál quieres ver los temas?';\n  sug = ['Temas del Manual de Ventas V5', 'Temas del Manual de caja chica V5', 'Temas del Manual de Inventarios V5'];\n}\nif (sug.length) out += `\\n\\n[[sugerencias: ${sug.join(' | ')}]]`;\nreturn [{ json: { output: out } }];"
+      }
+    },
+    {
+      "id": "c1",
+      "name": "Buscar respuesta guardada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE respuestas_cache SET usos = usos + 1\nWHERE clave = $1 AND $2 = 'si' RETURNING respuesta AS output",
+        "options": {
+          "queryReplacement": "={{ [ $json.clave, $json.primera ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SqW5cZj7KdT9Lbyu",
+          "name": "Base de datos NAVASOFT"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "c2",
+      "name": "¿Ya estaba respondida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "g1",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c3",
+      "name": "Respuesta guardada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { output: $input.first().json.output } }];"
+      }
+    },
+    {
+      "id": "b3",
+      "name": "Vectorizar consulta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:11434/api/embed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'bge-m3', input: $('Preparar búsqueda').first().json.busqueda, keep_alive: '3h' }) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "b4",
+      "name": "Buscar en manuales",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH q AS (\n  -- cualquier palabra cuenta (OR); las palabras de relleno de las preguntas no suman\n  SELECT replace(plainto_tsquery('spanish', regexp_replace(translate(lower($3), 'áéíóúü', 'aeiouu'),\n           '\\m(navasoft|modulo|funciona|como|hago|pantalla|opciones|tiene|registro|nuevo|creo|uno)\\M', ' ', 'g'))::text,\n           '&', '|')::tsquery AS ts,\n         tsvector_to_array(to_tsvector('spanish', translate(lower($3), 'áéíóúü', 'aeiouu'))) AS lex\n), base AS (\n  SELECT id, text, metadata, embedding <=> $1::vector AS dist,\n         to_tsvector('spanish', translate(lower(coalesce(metadata->>'seccion', '')), 'áéíóúü', 'aeiouu')) AS ts_sec,\n         to_tsvector('spanish', translate(lower(text), 'áéíóúü', 'aeiouu')) AS ts_txt\n  FROM chunks_bge_m3\n), vector AS (\n  SELECT id, row_number() OVER (ORDER BY dist) AS r FROM base ORDER BY dist LIMIT 40\n), en_seccion AS (\n  SELECT id, row_number() OVER (ORDER BY ts_rank_cd(ts_sec, q.ts, 1) DESC, dist) AS r\n  FROM base, q WHERE ts_sec @@ q.ts ORDER BY r LIMIT 40\n), en_texto AS (\n  SELECT id, row_number() OVER (ORDER BY ts_rank_cd(ts_txt, q.ts, 1) DESC) AS r\n  FROM base, q WHERE ts_txt @@ q.ts ORDER BY r LIMIT 40\n), manual AS (\n  -- cuantas palabras del nombre del manual aparecen en la pregunta, comparando raices\n  -- (\"transportista\" = \"TRANSPORTISTAS\"), sin contar las genericas\n  SELECT m, count(*) AS n FROM (SELECT DISTINCT metadata->>'manual' AS m FROM base) x,\n    unnest(tsvector_to_array(to_tsvector('spanish', translate(lower(x.m), 'áéíóúü', 'aeiouu')))) AS p, q\n  WHERE length(p) >= 3 AND p NOT IN ('manual', 'guia', 'proced', 'navasoft', 'v5') AND p = ANY(q.lex)\n  GROUP BY m\n), parecidos AS (\n  -- sim sigue siendo el parecido de significado (la IA lo ve y se filtra el ruido); el orden lo da el puntaje mixto\n  SELECT b.text, b.metadata, round((1 - b.dist)::numeric, 3) AS sim,\n         coalesce(1.0 / (60 + v.r), 0) + 0.5 * coalesce(1.0 / (60 + s.r), 0) + 0.5 * coalesce(1.0 / (60 + t.r), 0)\n         + 0.012 * coalesce(m.n, 0) / greatest((SELECT max(n) FROM manual), 1) AS puntaje\n  FROM base b LEFT JOIN vector v USING (id) LEFT JOIN en_seccion s USING (id) LEFT JOIN en_texto t USING (id)\n  LEFT JOIN manual m ON m.m = b.metadata->>'manual'\n  WHERE v.id IS NOT NULL OR s.id IS NOT NULL OR t.id IS NOT NULL\n  ORDER BY puntaje DESC LIMIT 6\n), principales AS (\n  SELECT metadata->>'archivo' AS archivo, (metadata->>'pagina')::int AS pagina, metadata->>'seccion' AS seccion,\n         row_number() OVER (ORDER BY puntaje DESC) AS rn\n  -- con el mismo minimo de parecido que usa \"Armar consulta\": una palabra suelta (\"capital\") no arma un procedimiento\n  FROM parecidos WHERE metadata->>'pagina' IS NOT NULL AND sim >= 0.45 ORDER BY puntaje DESC LIMIT 2\n), procedimiento AS (\n  -- el procedimiento completo del fragmento mas parecido: su pagina, hasta 5 anteriores de la misma seccion\n  -- (si cae a mitad de un procedimiento, se lee desde su inicio)\n  -- y hasta 3 paginas siguientes de la misma seccion (la inmediata siguiente siempre, por si cambia el titulo)\n  SELECT c.text, c.metadata, 'procedimiento completo, mismo tema en orden' AS similitud, 1 AS orden, (c.metadata->>'pagina')::int AS pag\n  FROM chunks_bge_m3 c JOIN principales x ON x.rn = 1 AND c.metadata->>'archivo' = x.archivo AND coalesce(c.metadata->>'tipo', '') <> 'captura'\n   AND (((c.metadata->>'pagina')::int BETWEEN x.pagina - 5 AND x.pagina + 3 AND c.metadata->>'seccion' = x.seccion)\n        OR (c.metadata->>'pagina')::int BETWEEN x.pagina AND x.pagina + 1)\n), vecinas AS (\n  SELECT c.text, c.metadata, 'página siguiente del mismo manual' AS similitud, 3 AS orden, (c.metadata->>'pagina')::int AS pag\n  FROM chunks_bge_m3 c JOIN principales x ON x.rn = 2 AND c.metadata->>'archivo' = x.archivo AND coalesce(c.metadata->>'tipo', '') <> 'captura'\n   AND (c.metadata->>'pagina')::int = x.pagina + 1\n), citadas AS (\n  SELECT metadata->>'archivo' AS archivo, max((metadata->>'pagina')::int) AS pagina\n  FROM chunks_bge_m3 WHERE metadata->>'pagina_url' = ANY(string_to_array($2, ',')) GROUP BY 1\n), siguientes AS (\n  SELECT c.text, c.metadata, 'página siguiente a lo ya explicado' AS similitud, 1 AS orden, (c.metadata->>'pagina')::int AS pag\n  FROM chunks_bge_m3 c JOIN citadas x ON c.metadata->>'archivo' = x.archivo AND coalesce(c.metadata->>'tipo', '') <> 'captura'\n   AND (c.metadata->>'pagina')::int BETWEEN x.pagina AND x.pagina + 2\n)\nSELECT text, metadata, similitud, 0 AS orden, pag FROM siguientes\nUNION ALL SELECT text, metadata, similitud, orden, pag FROM procedimiento\nUNION ALL SELECT text, metadata, sim::text, 2, (metadata->>'pagina')::int FROM parecidos\nUNION ALL SELECT text, metadata, similitud, orden, pag FROM vecinas\nORDER BY orden, pag",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($json.embeddings[0]), $('Preparar búsqueda').first().json.citadas, $('Preparar búsqueda').first().json.busqueda ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SqW5cZj7KdT9Lbyu",
+          "name": "Base de datos NAVASOFT"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "b5",
+      "name": "Armar consulta para la IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const b = $('Preparar búsqueda').first().json;\n// se descartan fragmentos repetidos y los de parecido muy bajo (ruido); maximo 10 fragmentos\nconst MINIMO = 0.45, MAXIMO = 10;\nconst vistos = new Set();\nconst frags = $input.all().map((i) => i.json).filter((f) => {\n  if (!f || !f.text || vistos.has(f.text)) return false;\n  const s = parseFloat(f.similitud);\n  if (!isNaN(s) && s < MINIMO) return false;\n  vistos.add(f.text);\n  return true;\n}).slice(0, MAXIMO);\nconst meta = (f) => (typeof f.metadata === 'string' ? JSON.parse(f.metadata) : (f.metadata || {}));\n// en un seguimiento, la primera pagina de continuacion es la ultima ya explicada: su seccion es el tema actual.\n// las paginas siguientes de OTRA seccion se marcan como otro tema, para que la IA lo ofrezca en vez de explicarlo.\nconst CONT = 'página siguiente a lo ya explicado';\nconst actual = frags.find((f) => f.similitud === CONT);\nconst seccionActual = actual ? (meta(actual).seccion || '') : '';\nconst paginaActual = actual ? Number(meta(actual).pagina) : null;\nconst bloques = frags.map((f, i) => {\n  const md = meta(f);\n  const tipo = isNaN(parseFloat(f.similitud)) ? f.similitud : `parecido ${f.similitud}`;\n  const otroTema = f.similitud === CONT && seccionActual && md.seccion && md.seccion !== seccionActual && Number(md.pagina) > paginaActual;\n  return [\n    `### Fragmento ${i + 1} (${tipo})`,\n    ...(otroTema ? [`AVISO: este fragmento es de la sección \"${md.seccion}\", distinta de la que se venía explicando (\"${seccionActual}\"). Es OTRO tema: no lo expliques; di que el procedimiento actual terminó y ofrécelo nombrándolo.`] : []),\n    `Manual: ${md.manual}`,\n    `Sección: ${md.seccion || 'sin sección'}`,\n    `Página: ${md.pagina ?? 'sin página'}`,\n    `pagina_url: ${md.pagina_url || 'ninguna'}`,\n    `imagenes_url: ${(md.imagenes_url || []).join(' ') || 'ninguna'}`,\n    'Contenido:',\n    f.text,\n  ].join('\\n');\n}).join('\\n\\n');\nconst prompt = 'CONVERSACIÓN PREVIA:\\n' + (b.historial || '(es el primer mensaje)') +\n  '\\n\\nFRAGMENTOS DE LOS MANUALES ENCONTRADOS PARA ESTA CONSULTA:\\n' + (bloques || '(ninguno)') +\n  '\\n\\nNUEVA CONSULTA DEL CLIENTE:\\n' + b.pregunta;\n// n8n procesa el texto como plantilla: se quitan las llaves para que no lo confunda\nreturn [{ json: { prompt: prompt.replace(/[{}]/g, '') } }];"
+      }
+    },
+    {
+      "id": "a2",
+      "name": "Asistente NAVASOFT",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "hasOutputParser": false,
+        "needsFallback": true,
+        "messages": {
+          "messageValues": [
+            {
+              "type": "SystemMessagePromptTemplate",
+              "message": "Eres el asistente virtual de soporte de EKAM PERÚ. EKAM PERÚ es la empresa que brinda el soporte; NAVASOFT es el sistema (ERP) que usan sus clientes. Hablas en nombre de EKAM PERÚ y ayudas a los clientes con el uso de NAVASOFT.\n\nEn cada mensaje recibes: la CONVERSACIÓN PREVIA, los FRAGMENTOS DE LOS MANUALES encontrados para la consulta y la NUEVA CONSULTA DEL CLIENTE.\n\nREGLAS:\n1. Responde SOLO con información de los FRAGMENTOS. Nunca inventes menús, botones, campos ni pasos. Usa la CONVERSACIÓN PREVIA para entender a qué se refiere el cliente (por ejemplo \"¿y después qué hago?\").\n2. Los fragmentos se buscan automáticamente y muchos solo se PARECEN a la consulta sin responderla. Antes de usar un fragmento comprueba que trate EXACTAMENTE la misma acción o problema que plantea el cliente:\n   - Si el cliente quiere EMITIR o REGISTRAR algo y el fragmento explica cómo ANULARLO o MODIFICARLO (o al revés), no sirve.\n   - Si el cliente reporta un ERROR o mensaje específico y el fragmento solo describe el uso normal de esa pantalla, no sirve: no lo presentes como solución.\n   - Si la consulta es comercial o administrativa (cotizaciones de servicios, licencias, instalaciones, accesos, capacitaciones) y el fragmento trata de una función del sistema con nombre parecido, no sirve.\n   Si ningún fragmento responde exactamente, aplica la regla 7 (o la 8 si la consulta es ambigua). Es mejor derivar a soporte que dar pasos de otro tema.\n3. Explica en pasos numerados, claros y cortos. Escribe los nombres de menús, ventanas, botones y campos en negrita, tal como aparecen en el fragmento (ejemplo: **Administrativo → Egresos → Caja chica → Movimientos**).\n4. Escribe solo rutas de menú, ventanas y botones que aparezcan textualmente en los fragmentos. Nunca escribas rutas aproximadas como \"por ejemplo Ventas\" o \"según la ruta de tu empresa\"; si el fragmento no trae la ruta, dilo.\n5. Indica la fuente UNA sola vez, al final de la respuesta (nunca después de cada paso), con un enlace a cada página usada y la dirección del campo pagina_url escrita tal cual (sin signos < >): 📄 Fuente: [Nombre del manual, página N](DIRECCION), [página M](DIRECCION)\n6. IMÁGENES: si explicas cómo usar una pantalla y el fragmento usado trae direcciones en imagenes_url, incluye 1 o 2 capturas (nunca más de 2), cada una en su propia línea justo después del paso al que corresponde: ![Pantalla de NAVASOFT](DIRECCION). Copia las direcciones exactamente; nunca inventes una.\n7. SIN INFORMACIÓN: si ningún fragmento responde la consulta, dilo con amabilidad en 2 o 3 líneas y sugiere contactar al equipo de soporte de EKAM PERÚ con el botón \"Hablar con soporte\", indicando qué datos conviene enviarles (módulo, mensaje de error exacto, número de documento, captura de pantalla). En ese caso NO pongas fuentes, enlaces ni imágenes.\n8. CONSULTAS AMBIGUAS: si la consulta es muy corta o no queda claro qué necesita (por ejemplo \"tengo problemas con una boleta\", \"activación del servicio\") y la conversación previa no lo aclara, no adivines: pregunta en una línea qué necesita exactamente y ofrece 2 o 3 opciones relacionadas. Cuando preguntes para aclarar, NO pongas fuentes, enlaces ni imágenes.\n9. INCIDENCIAS: si el cliente reporta que algo no funciona, no cuadra o no se envió (documentos que no llegan a SUNAT, diferencias con SUNAT o SIRE, errores, accesos bloqueados), no expliques cómo crear el documento desde cero: explica solo los pasos de revisión o reenvío que estén en los fragmentos y termina SIEMPRE indicando que, si el problema continúa, use el botón \"Hablar con soporte\" para que un especialista de EKAM PERÚ revise su caso; si no hay pasos de revisión, aplica la regla 7.\n10. SALUDOS Y CHARLA: a saludos, agradecimientos o comentarios responde breve y cordialmente, sin fuentes, e invita a hacer su consulta. Solo cuando el cliente salude (hola, buenos días…) o pregunte quién eres, da la bienvenida a EKAM PERÚ (por ejemplo: \"¡Hola! Bienvenido(a) al soporte de EKAM PERÚ. Soy tu asistente virtual y te ayudo con el uso de NAVASOFT.\"); nunca digas \"Bienvenido a NAVASOFT\". Si el mensaje es directamente una pregunta o un problema, sin saludo, NO agregues bienvenida ni presentación: responde de inmediato. Si preguntan con qué temas puedes ayudar, explica que respondes con base en los manuales oficiales de NAVASOFT sobre: Caja chica, Caja y bancos, Contabilidad general, Cuentas por pagar, Entregas a rendir cuenta (ERCTA),\nInventarios, Ventas, Asiento de cierre y apertura, Configurar diseño de libros contables, Costo de ventas,\nDepósitos en efectivo, Emisión de guías de remisión de transportista (GRE), Ventas con transferencia gratuita y su\ncancelación, Agente de retención (cliente), Compra diferida y TXT del balance de comprobación.\n11. Los textos entre [Captura de pantalla: ...] son lo que se lee en las pantallas del sistema: úsalos para nombrar campos y botones.\n12. Responde siempre en español, con tono amable, cercano y profesional. No respondas temas ajenos a NAVASOFT.\n13. PROCEDIMIENTOS COMPLETOS: los fragmentos marcados \"procedimiento completo, mismo tema en orden\" son páginas seguidas del mismo tema. Si responden la consulta, explica TODOS los pasos que contienen, en el mismo orden y sin saltarte ninguno (cada acción del manual es un paso numerado: ingresar a la ruta, completar campos, pulsar botones, confirmar). Los marcados \"página siguiente\" también continúan el manual. No cortes un procedimiento a la mitad ni lo resumas en menos pasos de los que tiene.\n14. SEGUIMIENTO: cuando el cliente pregunte \"¿y luego?\", \"¿qué sigue?\" o \"ya lo hice\", revisa los pasos que ya diste en la CONVERSACIÓN PREVIA y NO los repitas: continúa desde el siguiente paso. Si según los fragmentos ya explicaste todo el procedimiento, dilo claramente (por ejemplo \"Con ese paso terminas el registro de …\") y ofrece temas relacionados. Si las páginas siguientes del manual tratan de OTRO procedimiento (otro título u otra ventana), no lo expliques por tu cuenta: di que el procedimiento actual terminó y pregunta si quiere ver ese otro tema, nombrándolo. Nunca digas que no tienes información de un proceso que ya explicaste completo.\n15. SUGERENCIAS: al final de cada respuesta con pasos agrega UNA última línea exacta con 2 o 3 preguntas cortas que el cliente podría hacer a continuación y que los fragmentos permitan responder, con este formato: SUGERENCIAS: ¿pregunta 1? | ¿pregunta 2? | ¿pregunta 3? No la agregues en saludos simples, en aclaraciones ni cuando derivas a soporte.\n16. Las líneas \"[Descripción de la captura: ...]\" fueron escritas automáticamente por una IA que miró la imagen y pueden tener errores de lectura: úsalas solo para saber qué pantalla muestra la captura. Nunca copies de ellas números, códigos, montos ni nombres de ejemplo, y no las cites como si fueran texto del manual."
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "a3",
+      "name": "Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        220
+      ],
+      "parameters": {
+        "modelName": "models/gemini-flash-lite-latest",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YbrX4mPubLFww3W5",
+          "name": "Gemini NAVASOFT"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "a7",
+      "name": "Groq respaldo",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        220
+      ],
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "credentials": {
+        "groqApi": {
+          "id": "F1zpkcgXPrBt9cVH",
+          "name": "Groq account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "f1",
+      "name": "Preparar respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const output = String($input.first().json.text || $input.first().json.output || '').trim();\nconst paginas = [...new Set(output.match(/https?:\\/\\/[^\\s)>]+\\/navasoft-pagina\\?id=[0-9a-f]{12}/g) || [])];\n// n8n no acepta un parametro vacio en la consulta: 'ninguna' no coincide con ninguna pagina\nreturn [{ json: { output, paginas: paginas.join(',') || 'ninguna' } }];"
+      }
+    },
+    {
+      "id": "f2",
+      "name": "Capturas de páginas citadas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT u.url\nFROM chunks_bge_m3 c, jsonb_array_elements_text(c.metadata->'imagenes_url') WITH ORDINALITY AS u(url, n)\nWHERE c.metadata->>'pagina_url' = ANY(string_to_array($1, ','))\nORDER BY (c.metadata->>'pagina')::int, u.n\nLIMIT 4",
+        "options": {
+          "queryReplacement": "={{ [ $json.paginas ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SqW5cZj7KdT9Lbyu",
+          "name": "Base de datos NAVASOFT"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "f3",
+      "name": "Respuesta final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const MAX = 2;\nlet output = $('Preparar respuesta').first().json.output.replace(/\\]\\(<([^>]+)>\\)/g, ']($1)');\nconst urls = $input.all().map((i) => i.json.url).filter(Boolean);\n// las sugerencias de la IA se separan y se agregan al final como marca que el portal convierte en botones\nlet sugerencias = [];\noutput = output.replace(/^\\s*\\**SUGERENCIAS:?\\**\\s*(.+)$/im, (_, s) => {\n  sugerencias = s.split('|').map((x) => x.replace(/[*_]/g, '').trim()).filter((x) => x.length > 3 && x.length < 120).slice(0, 3);\n  return '';\n}).trim();\n// si la respuesta solo pide una aclaracion (termina en pregunta y no trae pasos), va sin fuentes ni capturas\nconst cuerpo = output.split('📄')[0].replace(/!\\[[^\\]]*\\]\\([^)]+\\)/g, '').trim();\nconst soloPregunta = /\\?\\s*$/.test(cuerpo) && !/\\*\\*[^*\\n]+\\s(→|–|-)\\s[^*\\n]+\\*\\*/.test(cuerpo);\nif (soloPregunta) { output = cuerpo; sugerencias = []; }\nlet vistas = 0;\noutput = output.replace(/!\\[[^\\]]*\\]\\([^)]+\\)\\n?/g, (img) => (++vistas <= MAX ? img : ''));\n// si la respuesta dice que los manuales no tienen la informacion, no se agregan capturas\nconst sinInfo = /no (se encuentra|contienen|cuento|está disponible|incluye|detallan|dispongo)|lamentablemente|lamento informar|ningún fragmento|ninguno de los/i.test(output);\nif (sinInfo) sugerencias = [];\nif (vistas === 0 && urls.length && !sinInfo && !soloPregunta) {\n  const bloque = urls.slice(0, MAX).map((u) => `![Pantalla de NAVASOFT](${u})`).join('\\n\\n');\n  const fuente = output.search(/\\n[^\\n]*📄/);\n  output = fuente >= 0 ? output.slice(0, fuente) + '\\n\\n' + bloque + '\\n' + output.slice(fuente) : output + '\\n\\n' + bloque;\n}\nif (!output) output = 'Lo siento, en este momento no pude responder. Intenta nuevamente en unos segundos.';\noutput = output.replace(/\\n{3,}/g, '\\n\\n');\nif (sugerencias.length) output += `\\n\\n[[sugerencias: ${sugerencias.join(' | ')}]]`;\n// solo se guarda para reutilizar una primera pregunta de tipo \"como / que / donde\" respondida con pasos de los\n// manuales; los reportes de problemas (\"no me cuadra\", \"no se envio\") dependen de cada caso y no se guardan\nconst b = $('Preparar búsqueda').first().json;\nconst esConsultaDeUso = /^\\s*¿?\\s*(c[oó]mo|qu[eé]|d[oó]nde|cu[aá]l(es)?|para qu[eé]|puedo|se puede)\\b/i.test(b.pregunta);\nconst guardar = b.primera === 'si' && esConsultaDeUso && output.includes('navasoft-pagina?id=') && !sinInfo && !soloPregunta;\nreturn [{ json: { output, guardar: guardar ? 'si' : 'no', clave: b.clave } }];"
+      }
+    },
+    {
+      "id": "f4",
+      "name": "Guardar para reutilizar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2660,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH g AS (\n  INSERT INTO respuestas_cache (clave, respuesta) SELECT $1, $2 WHERE $3 = 'si'\n  ON CONFLICT (clave) DO UPDATE SET respuesta = EXCLUDED.respuesta, creado = now()\n  RETURNING 1\n)\nSELECT $2::text AS output",
+        "options": {
+          "queryReplacement": "={{ [ $json.clave, $json.output, $json.guardar ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SqW5cZj7KdT9Lbyu",
+          "name": "Base de datos NAVASOFT"
+        }
+      },
+      "alwaysOutputData": true
+    }
+  ],
+  "connections": {
+    "Consulta interna": {
+      "main": [
+        [
+          {
+            "node": "Historial reciente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historial reciente": {
+      "main": [
+        [
+          {
+            "node": "Preparar búsqueda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar búsqueda": {
+      "main": [
+        [
+          {
+            "node": "¿Pide el índice?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pide el índice?": {
+      "main": [
+        [
+          {
+            "node": "Índice del manual",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar respuesta guardada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Índice del manual": {
+      "main": [
+        [
+          {
+            "node": "Responder índice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar respuesta guardada": {
+      "main": [
+        [
+          {
+            "node": "¿Ya estaba respondida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Ya estaba respondida?": {
+      "main": [
+        [
+          {
+            "node": "Respuesta guardada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Vectorizar consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vectorizar consulta": {
+      "main": [
+        [
+          {
+            "node": "Buscar en manuales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar en manuales": {
+      "main": [
+        [
+          {
+            "node": "Armar consulta para la IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar consulta para la IA": {
+      "main": [
+        [
+          {
+            "node": "Asistente NAVASOFT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Asistente NAVASOFT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq respaldo": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Asistente NAVASOFT",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Asistente NAVASOFT": {
+      "main": [
+        [
+          {
+            "node": "Preparar respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar respuesta": {
+      "main": [
+        [
+          {
+            "node": "Capturas de páginas citadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capturas de páginas citadas": {
+      "main": [
+        [
+          {
+            "node": "Respuesta final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta final": {
+      "main": [
+        [
+          {
+            "node": "Guardar para reutilizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

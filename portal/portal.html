@@ -1,0 +1,2073 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asistente NAVASOFT · EKAM PERÚ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
+<style>
+  /* ===== Estilo corporativo EKAM: marco azul marino, papel claro, filetes finos y naranja solo para la acción ===== */
+  :root {
+    --azul: #001858; --azul-2: #13307e; --azul-3: #24459f; --dorado: #f58a00; --dorado-2: #fdf1e0; --sello: #8f4700;
+    --fondo: #f6f5f1; --tarjeta: #ffffff; --borde: rgba(0,24,88,.09); --linea: rgba(0,24,88,.13);
+    --texto: #0f1a3a; --suave: #55607d; --terciario: #6a7390;
+    --sobre-azul: #ffffff; --sobre-azul-2: #b9c4e8; --linea-azul: rgba(255,255,255,.13);
+    --rojo: #c4271b; --rojo-2: #fbeae8; --verde: #1b7a43; --verde-2: #e4f3ea;
+    --r-s: 8px; --r-m: 10px; --r-l: 14px; --r-xl: 18px;
+    --sombra-1: 0 1px 2px rgba(0,24,88,.05);
+    --sombra-2: 0 1px 2px rgba(0,24,88,.05), 0 8px 24px -8px rgba(0,24,88,.14);
+    --sombra-3: 0 2px 4px rgba(0,12,44,.08), 0 28px 64px -16px rgba(0,12,44,.38);
+    --naranja: #f58a00; --sobre-naranja: #001858;
+    --muelle: cubic-bezier(.22,1,.36,1);
+    --foco: 0 0 0 3px rgba(36,69,159,.22);
+    --titular: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+    --mono: ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: 'Hanken Grotesk', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+         font-size: 15px; line-height: 1.6; color: var(--texto); background: var(--fondo); caret-color: var(--dorado);
+         -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  ::selection { background: rgba(245,138,0,.28); color: var(--azul); }
+  * { scrollbar-width: thin; scrollbar-color: rgba(0,24,88,.22) transparent; }
+  button { font: inherit; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent; }
+  input, textarea, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--azul-3); outline-offset: 2px; }
+  a { color: var(--azul-2); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .oculto { display: none !important; }
+  .logo { background: #fff url('/webhook/navasoft-img?id=logo-ekam&v=2') center / contain no-repeat; background-origin: content-box; border-radius: var(--r-m); }
+  .ic { width: 18px; height: 18px; flex: none; }
+
+  /* ---------- controles ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: var(--r-m);
+         padding: 10px 18px; font-weight: 600; line-height: 1.2; transition: background-color .18s, border-color .18s, color .18s, transform .18s var(--muelle); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn-primario { background: var(--azul); color: #fff; width: 100%; margin-top: 24px; padding: 13px 18px; font-size: 1rem; }
+  .btn-primario:hover:not(:disabled) { background: var(--azul-2); }
+  .btn-dorado { background: var(--naranja); color: var(--sobre-naranja); }
+  .btn-dorado:hover:not(:disabled) { background: #ff9c1f; }
+  .btn-suave { background: var(--tarjeta); color: var(--azul); border-color: var(--linea); }
+  .btn-suave:hover:not(:disabled) { border-color: rgba(0,24,88,.32); background: #fbfbf9; }
+  .btn-eliminar { color: var(--rojo); }
+  .btn-eliminar:hover:not(:disabled) { background: var(--rojo-2); border-color: rgba(196,39,27,.35); }
+  label { display: block; font-weight: 600; font-size: .82rem; margin: 16px 0 6px; color: var(--texto); }
+  .campo { width: 100%; padding: 11px 13px; border: 1px solid var(--linea); border-radius: var(--r-m); background: #fff; outline: none;
+           transition: box-shadow .18s, border-color .18s; }
+  .campo:hover { border-color: rgba(0,24,88,.3); }
+  .campo:focus { border-color: var(--azul-3); box-shadow: var(--foco); }
+  .campo::placeholder, textarea::placeholder { color: var(--terciario); }
+  /* campo de contraseña con botón para verla */
+  .clave-ver { position: relative; }
+  .clave-ver .campo { padding-right: 46px; }
+  .clave-ver button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; display: grid; place-items: center;
+                      border: none; background: none; color: var(--suave); border-radius: var(--r-s); transition: background .15s, color .15s; }
+  .clave-ver button:hover { background: rgba(0,24,88,.06); color: var(--azul); }
+  .clave-ver button[aria-pressed="true"] { color: var(--azul); }
+  .error { color: var(--rojo); font-size: .86rem; margin-top: 12px; min-height: 1.2em; }
+  .ok { color: var(--verde); font-size: .86rem; margin-top: 12px; }
+  .pie { text-align: center; color: var(--suave); font-size: .82rem; margin-top: 24px; }
+
+  /* ---------- acceso ---------- */
+  .acceso { display: grid; place-items: center; padding: 24px 16px;
+            background: linear-gradient(165deg, #07256e 0%, #001858 52%, #000f3a 100%); }
+  .acceso.con-marca { grid-template-columns: minmax(0, 1fr) minmax(400px, 500px); padding: 0; place-items: stretch; }
+  .marca-panel { background: #fff; color: var(--texto); border-right: 4px solid var(--dorado); padding: 56px 72px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+  .marca-panel .logo { width: 350px; height: 182px; padding: 0; margin-left: -10px; border-radius: 0; background-position: left center; filter: brightness(1.05) contrast(1.06); }
+  .marca-panel h2 { font-family: var(--titular); font-size: 2.55rem; line-height: 1.12; letter-spacing: -.02em; font-weight: 500; color: var(--azul); margin: 0 0 14px; max-width: 19ch; text-wrap: balance; }
+  .marca-panel h2 span { white-space: nowrap; font-style: italic; text-decoration: underline; text-decoration-color: var(--dorado); text-decoration-thickness: 3px; text-underline-offset: 7px; }
+  .marca-panel p { color: var(--suave); font-size: 1.05rem; max-width: 46ch; margin: 0 0 28px; }
+  .ventajas { display: grid; max-width: 470px; border-top: 1px solid var(--linea); }
+  .ventajas > div { display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid var(--linea); }
+  .ventajas > div > span { flex: none; display: grid; place-items: center; width: 22px; height: 24px; color: var(--dorado); }
+  .ventajas b { display: block; font-size: .98rem; font-weight: 600; }
+  .ventajas small { color: var(--suave); font-size: .88rem; }
+  .marca-pie { color: var(--suave); font-size: .8rem; }
+  .tarjeta { width: 100%; max-width: 420px; background: var(--tarjeta); border-radius: var(--r-xl); padding: 36px 32px 32px; position: relative; box-shadow: var(--sombra-3); }
+  .acceso.con-marca .tarjeta { align-self: center; justify-self: center; margin: 32px; }
+  .acceso.con-marca .tarjeta .logo { display: none; }
+  .tarjeta .logo { width: 196px; height: 84px; margin: 0 auto 20px; padding: 6px 12px; }
+  .tarjeta h1 { font-family: var(--titular); font-size: 1.8rem; line-height: 1.15; letter-spacing: -.015em; font-weight: 500; margin: 0 0 6px; color: var(--azul); }
+  .tarjeta p.sub { color: var(--suave); margin: 0 0 8px; font-size: .95rem; }
+  .tarjeta .pie a { color: var(--azul-2); font-weight: 600; }
+
+  /* ---------- aplicación ---------- */
+  .app { display: grid; grid-template-columns: 296px 1fr; height: 100%; }
+  .lateral { background: var(--azul); color: var(--sobre-azul); display: flex; flex-direction: column; min-height: 0; scrollbar-color: rgba(255,255,255,.26) transparent; }
+  .lateral * { scrollbar-color: rgba(255,255,255,.26) transparent; }
+  .lateral :focus-visible { outline-color: #ffb45c; }
+  .lateral .cab { padding: 24px 16px 12px; }
+  .lateral .logo { display: block; width: 100%; height: 84px; padding: 10px 16px; border: none; border-radius: var(--r-l); cursor: pointer;
+                   box-shadow: 0 1px 2px rgba(0,8,32,.3), 0 10px 24px -10px rgba(0,8,32,.6); transition: transform .25s var(--muelle), box-shadow .25s; }
+  .lateral .logo:hover { transform: translateY(-1px); box-shadow: 0 1px 2px rgba(0,8,32,.3), 0 14px 28px -10px rgba(0,8,32,.75); }
+  .lateral .logo:active { transform: translateY(0); }
+  .lateral .nuevo { margin-top: 16px; width: 100%; padding: 11px; font-size: .95rem; }
+  .buscador { margin: 8px 16px; position: relative; }
+  .buscador svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); opacity: .7; }
+  .buscador input { width: 100%; padding: 9px 12px 9px 34px; border-radius: var(--r-s); border: 1px solid transparent; background: rgba(255,255,255,.09); color: #fff;
+                    outline: none; font-size: .92rem; transition: background .18s, border-color .18s; }
+  .buscador input::placeholder { color: var(--sobre-azul-2); }
+  .buscador input:hover { background: rgba(255,255,255,.12); }
+  .buscador input:focus { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.4); }
+  .lista { flex: 1; overflow-y: auto; padding: 4px 10px 12px; }
+  .grupo { font-size: .7rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: #93a2d4; padding: 18px 10px 6px; }
+  .conv { display: flex; align-items: center; gap: 2px; padding: 8px 6px 8px 10px; border-radius: var(--r-s); cursor: pointer; font-size: .92rem;
+          color: #dde3f6; transition: background .15s, color .15s; }
+  .conv:hover { background: rgba(255,255,255,.07); color: #fff; }
+  .conv.activa { background: rgba(255,255,255,.14); color: #fff; font-weight: 600; }
+  .conv span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .conv button { display: grid; place-items: center; width: 28px; height: 28px; background: none; border: none; color: inherit; border-radius: 6px; opacity: 0; transition: opacity .15s, background .15s; }
+  .conv:hover button, .conv button:focus-visible { opacity: .75; }
+  .conv button:hover { opacity: 1; background: rgba(255,255,255,.16); }
+  .vacio { color: var(--sobre-azul-2); font-size: .9rem; padding: 16px 10px; }
+  .lateral .usuario { margin: 0; padding: 14px 16px 16px; border-top: 1px solid var(--linea-azul); font-size: .88rem; }
+  .perfil { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .perfil > div { min-width: 0; }
+  .perfil b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .perfil small { display: block; color: var(--sobre-azul-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .iniciales { width: 36px; height: 36px; flex: none; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: .8rem; letter-spacing: .02em;
+               background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.28); color: #fff; }
+  .lateral .usuario .acciones { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+  .lateral .usuario .acciones button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; background: rgba(255,255,255,.07);
+                              color: #dde3f6; border-radius: var(--r-s); padding: 8px; font-size: .8rem; font-weight: 500; transition: background .15s, color .15s; }
+  .lateral .usuario .acciones button:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+  .principal { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--fondo); position: relative; }
+  .barra { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 28px; background: var(--fondo); position: relative; z-index: 5;
+           border-bottom: 1px solid var(--linea); }
+  .velo-menu, .cerrar-menu { display: none; }
+  .barra .menu { display: none; background: none; border: none; color: var(--azul); padding: 8px; border-radius: var(--r-s); }
+  .titulos { display: flex; flex-direction: column; min-width: 0; }
+  .barra h2 { margin: 0; font-size: 1.04rem; font-weight: 600; letter-spacing: -.005em; color: var(--azul); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .estado-bot { color: var(--suave); font-size: .78rem; display: flex; align-items: center; gap: 6px; }
+  .estado-bot .punto { width: 6px; height: 6px; border-radius: 50%; background: #2a9d5c; }
+  .barra .soporte { margin-left: auto; white-space: nowrap; padding: 9px 14px; font-size: .88rem; }
+
+  /* ---------- conversación ---------- */
+  .mensajes { flex: 1; overflow-y: auto; padding: 28px 28px 16px; }
+  .contenedor { max-width: 820px; margin: 0 auto; }
+  .msg { display: flex; margin-bottom: 20px; animation: aparecer .4s var(--muelle); }
+  @keyframes aparecer { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .msg.usuario { justify-content: flex-end; }
+  .msg.usuario .globo { background: var(--azul); color: #fff; border-radius: 16px 16px 4px 16px; padding: 10px 16px;
+                        max-width: min(75%, 60ch); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .avatar { display: none; }
+  .msg.bot .globo { flex: 1; min-width: 0; background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-l); padding: 16px 24px 20px;
+                    overflow-wrap: anywhere; box-shadow: var(--sombra-1); }
+  .voucher-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -24px 16px; padding: 0 24px 14px; border-bottom: 1px solid var(--borde); }
+  .voucher-cab small { display: flex; align-items: center; gap: 10px; font-size: .82rem; font-weight: 600; color: var(--azul); }
+  .voucher-cab small::before { content: 'E'; width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; background: var(--azul);
+                               color: #fff; font-family: var(--titular); font-weight: 600; font-size: .92rem; line-height: 1; }
+  .sello { font-size: .74rem; font-weight: 600; letter-spacing: .01em; color: var(--sello); background: var(--dorado-2); border: 1px solid rgba(245,138,0,.38);
+           border-radius: 6px; padding: 3px 9px; font-variant-numeric: tabular-nums; white-space: nowrap; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+  .msg.bot .globo > :not(.voucher-cab):not(.valorar):not(.b-guia) { max-width: 68ch; }
+  .msg.bot .globo p { margin: 0 0 12px; }
+  .msg.bot .globo strong { color: var(--azul); font-weight: 600; }
+  .msg.bot .globo a { color: var(--azul-2); font-weight: 600; }
+  .msg.bot .globo h1, .msg.bot .globo h2, .msg.bot .globo h3 { font-size: 1.05rem; font-weight: 600; color: var(--azul); margin: 22px 0 8px; }
+  .msg.bot .globo ul { margin: 8px 0 12px; padding-left: 20px; }
+  .msg.bot .globo ul li::marker { color: var(--dorado); }
+  .msg.bot .globo ol { counter-reset: paso; list-style: none; padding: 0; margin: 12px 0 16px; border-top: 1px solid var(--borde); }
+  .msg.bot .globo ol > li { counter-increment: paso; position: relative; padding: 11px 0 11px 42px; border-bottom: 1px solid var(--borde); }
+  .msg.bot .globo ol > li::before { content: counter(paso); position: absolute; left: 0; top: 10px; width: 26px; height: 26px; border-radius: 50%;
+                                    display: grid; place-items: center; border: 1px solid rgba(0,24,88,.28); color: var(--azul); font-size: .78rem; font-weight: 600;
+                                    font-variant-numeric: tabular-nums; }
+  .msg.bot .globo ol > li ul { margin: 6px 0 0; }
+  .msg.bot .globo img { display: block; max-width: 100%; margin: 14px 0; border: 1px solid var(--linea); border-radius: var(--r-m); cursor: zoom-in;
+                        transition: box-shadow .25s, border-color .25s; }
+  .msg.bot .globo img:hover { border-color: rgba(0,24,88,.3); box-shadow: var(--sombra-2); }
+  .msg.bot .globo code { font-family: var(--mono); background: rgba(0,24,88,.06); padding: 1px 6px; border-radius: 5px; font-size: .86em; }
+  .msg.bot .globo pre { background: rgba(0,24,88,.05); border-radius: var(--r-m); padding: 12px 14px; overflow-x: auto; }
+  .msg.bot .globo pre code { background: none; padding: 0; }
+  .msg.bot .globo p.fuente { font-size: .84rem; color: var(--suave); margin: 14px 0 0; }
+  .escribiendo { color: var(--suave); display: flex; align-items: center; gap: 10px; }
+  .msg.bot .globo.escribiendo { flex: none; padding: 12px 18px; }
+  .puntos span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--dorado); margin-right: 3px; animation: salto 1.2s infinite var(--muelle); }
+  .puntos span:nth-child(2) { animation-delay: .15s; } .puntos span:nth-child(3) { animation-delay: .3s; }
+  @keyframes salto { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+
+  .valorar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--borde);
+             font-size: .82rem; color: var(--suave); }
+  .valorar button { display: inline-grid; place-items: center; width: 34px; height: 30px; background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-s);
+                    color: var(--suave); padding: 0; transition: border-color .18s, color .18s, background .18s; }
+  .valorar button:hover { border-color: rgba(0,24,88,.32); color: var(--azul); }
+  .valorar button.marcado { background: var(--dorado-2); border-color: rgba(245,138,0,.5); color: var(--sello); }
+  .valorar .link { width: auto; height: auto; background: none; border: none; color: var(--azul-2); font-weight: 600; text-decoration: underline; padding: 0 4px; }
+  .sugerencias { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 22px; }
+  .sugerencias button { background: var(--tarjeta); border: 1px solid var(--linea); color: var(--azul); border-radius: 999px; padding: 7px 14px; font-size: .88rem; text-align: left;
+                        transition: border-color .18s, background .18s; }
+  .sugerencias button:hover { border-color: var(--azul-3); background: #fbfbf9; }
+  .b-guia { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; background: var(--azul); color: #fff; border: none; border-radius: var(--r-m);
+            padding: 10px 16px; font-size: .88rem; font-weight: 600; transition: background .18s, transform .18s var(--muelle); }
+  .b-guia:hover { background: var(--azul-2); }
+  .b-guia:active { transform: translateY(1px); }
+  .aviso-sistema { text-align: center; margin: 4px 0 22px; }
+  .aviso-soporte { max-width: 460px; margin: 6px auto 22px; background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-l); padding: 16px 18px; box-shadow: var(--sombra-1); }
+  .aviso-soporte .as-cab { display: flex; gap: 12px; align-items: flex-start; }
+  .aviso-soporte .as-cab b { display: block; font-size: .95rem; }
+  .aviso-soporte .as-cab small { display: block; color: var(--suave); font-size: .85rem; margin-top: 2px; }
+  .aviso-soporte .as-ok { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--verde-2); color: var(--verde); font-weight: 700; }
+  .aviso-soporte .as-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-left: 42px; }
+  .aviso-soporte .as-botones .btn { text-decoration: none; flex: 1 1 auto; }
+  @media (max-width: 600px) { .aviso-soporte .as-botones { padding-left: 0; } }
+  .aviso-sistema span { display: inline-block; background: var(--verde-2); color: var(--verde); border-radius: var(--r-m); padding: 8px 16px; font-size: .88rem; }
+
+  /* ---------- bienvenida ---------- */
+  .bienvenida { padding: 48px 0 24px; text-align: center; }
+  .bienvenida h3 { font-family: var(--titular); font-size: 2.4rem; line-height: 1.12; letter-spacing: -.02em; font-weight: 500; color: var(--azul); margin: 0 auto 12px; max-width: 22ch; text-wrap: balance; }
+  .bienvenida h3 span { display: block; font-style: italic; color: var(--azul-3); }
+  .bienvenida p { max-width: 54ch; margin: 0 auto 28px; color: var(--suave); font-size: 1.02rem; }
+  .ejemplos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; text-align: left; }
+  .ejemplos button { display: flex; align-items: center; justify-content: space-between; gap: 14px; background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-l);
+                     padding: 14px 16px; color: var(--texto); line-height: 1.4; text-align: left; transition: border-color .2s, box-shadow .2s; }
+  .ejemplos button:hover { border-color: var(--azul-3); box-shadow: var(--sombra-2); }
+  .ejemplos .ic { color: var(--terciario); transition: transform .25s var(--muelle), color .2s; }
+  .ejemplos button:hover .ic { transform: translateX(3px); color: var(--dorado); }
+  .ejemplos small { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--sello); margin-bottom: 3px; }
+
+  /* ---------- caja de escritura ---------- */
+  .entrada { padding: 8px 28px 16px; background: transparent; }
+  .entrada form.compositor { max-width: 820px; margin: 0 auto; display: flex; align-items: flex-end; gap: 4px; background: var(--tarjeta); border: 1px solid var(--linea);
+                             border-radius: 16px; padding: 6px 6px 6px 16px; box-shadow: var(--sombra-2); transition: box-shadow .2s, border-color .2s; }
+  .entrada form.compositor:focus-within { border-color: var(--azul-3); box-shadow: var(--sombra-2), var(--foco); }
+  .entrada textarea { flex: 1; resize: none; border: none; outline: none; background: transparent; padding: 10px 0; min-height: 42px; max-height: 160px; line-height: 1.45; }
+  .entrada textarea:focus-visible { outline: none; }
+  .entrada textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entrada .microfono, .entrada .enviar { width: 42px; height: 42px; padding: 0; flex: none; border-radius: var(--r-m); }
+  .entrada .microfono, .entrada .clip { border-color: transparent; background: transparent; color: var(--suave); }
+  .entrada .microfono:hover:not(:disabled), .entrada .clip:hover:not(:disabled) { background: rgba(0,24,88,.06); border-color: transparent; color: var(--azul); }
+  .entrada .microfono.escuchando { background: var(--rojo); color: #fff; animation: latido 1s infinite; }
+  .entrada .microfono.procesando { opacity: .7; cursor: wait; }
+  @keyframes latido { 50% { opacity: .7; } }
+  .girando { animation: girar .8s linear infinite; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  .entrada .clip { width: 42px; height: 42px; padding: 0; flex: none; border-radius: var(--r-m); margin-left: -10px; }
+  .adjunto { max-width: 820px; margin: 0 auto 8px; display: flex; align-items: center; gap: 12px; background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-l);
+             padding: 8px 10px 8px 8px; animation: aparecer .35s var(--muelle); }
+  .adjunto img { width: 64px; height: 44px; object-fit: cover; border-radius: 6px; background: var(--fondo); }
+  .adjunto div { flex: 1; min-width: 0; font-size: .86rem; }
+  .adjunto b { display: block; font-weight: 600; }
+  .entrada .adjunto small { display: block; margin: 0; max-width: none; text-align: left; color: var(--suave); font-size: .78rem; }
+  .adjunto button { width: 30px; height: 30px; border: none; border-radius: var(--r-s); background: rgba(0,24,88,.06); font-size: 1.1rem; line-height: 1; color: var(--suave); }
+  .adjunto button:hover { background: rgba(0,24,88,.12); color: var(--texto); }
+  .msg.usuario .globo img.captura { display: block; max-width: 220px; max-height: 160px; border-radius: 10px; margin: 2px 0 6px auto; cursor: zoom-in; }
+  .msg.usuario .globo .chip-captura { display: inline-block; margin-top: 6px; font-size: .78rem; color: var(--sobre-azul-2); }
+  .entrada small { display: block; max-width: 820px; margin: 8px auto 0; color: var(--terciario); font-size: .76rem; text-align: center; }
+
+  /* ---------- administración ---------- */
+  .admin { flex: 1; overflow-y: auto; padding: 28px; }
+  .admin .contenedor { max-width: 1120px; }
+  .panel { background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-l); padding: 22px 24px; margin-bottom: 20px; }
+  .panel h3 { margin: 0 0 14px; font-size: 1.08rem; font-weight: 600; color: var(--azul); }
+  .form-fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; align-items: end; }
+  .form-fila label { margin-top: 0; }
+  .clave-gen { display: flex; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  th { text-align: left; color: var(--suave); font-weight: 600; font-size: .7rem; letter-spacing: .07em; text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--linea); }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+  td small { color: var(--suave); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(0,24,88,.025); }
+  .tabla-env { overflow-x: auto; }
+  .etiqueta { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .75rem; font-weight: 600; }
+  .etiqueta.si { background: var(--verde-2); color: var(--verde); }
+  .etiqueta.no { background: var(--rojo-2); color: var(--rojo); }
+  .etiqueta.admin { background: var(--dorado-2); color: var(--sello); }
+  .etiqueta.pend { background: rgba(0,24,88,.07); color: var(--suave); }
+  td .btn { padding: 6px 11px; font-size: .82rem; border-radius: var(--r-s); }
+  .aviso { background: var(--dorado-2); border: 1px solid rgba(245,138,0,.3); border-radius: var(--r-m); padding: 14px 16px; margin-top: 16px; font-size: .9rem; }
+  .aviso code { font-family: var(--mono); background: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+  .pestanas { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--linea); }
+  .pestanas button { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 10px 14px; font-weight: 600; font-size: .92rem; color: var(--suave);
+                     transition: color .18s, border-color .18s; }
+  .pestanas button:hover { color: var(--azul); }
+  .pestanas button.activa { color: var(--azul); border-bottom-color: var(--dorado); }
+  .pestanas .cuenta { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 8px; border-radius: 999px; background: var(--dorado); color: var(--sobre-naranja);
+                      font-size: .74rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .tarjetas-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .tarjetas-resumen div { background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--r-l); padding: 16px 18px; }
+  .tarjetas-resumen b { display: block; font-family: var(--titular); font-size: 2rem; line-height: 1.15; font-weight: 500; color: var(--azul); font-variant-numeric: lining-nums tabular-nums; }
+  .tarjetas-resumen small { color: var(--suave); }
+  .celda-texto { max-width: 340px; white-space: normal; }
+  /* crear varias cuentas */
+  .nota-panel { margin: 0 0 12px; color: var(--suave); font-size: .9rem; }
+  .lote-lista { resize: vertical; min-height: 120px; font-family: var(--mono); font-size: .85rem; line-height: 1.6; }
+  /* manuales */
+  #m-tabla td:last-child { white-space: nowrap; }
+  #m-tabla .detalle { display: block; color: var(--suave); font-size: .8rem; margin-top: 2px; max-width: 360px; white-space: normal; }
+  #m-tabla .error-manual { color: var(--rojo); }
+  .etiqueta.proceso { background: rgba(36,69,159,.1); color: var(--azul-3); }
+  .lote-archivo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .lote-pie { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .lote-resumen { color: var(--suave); font-size: .86rem; }
+  #lt-resultado .aviso { margin: 16px 0 12px; }
+  #lt-tabla code { font-family: var(--mono); background: rgba(0,24,88,.06); padding: 2px 7px; border-radius: 5px; font-weight: 600; }
+  #lt-tabla td:last-child { white-space: nowrap; }
+  #lt-tabla a.btn { text-decoration: none; }
+  #lt-tabla a.btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+  #lt-tabla .enviado { color: var(--verde); font-size: .8rem; font-weight: 600; margin-left: 6px; }
+  #lt-tabla .fallo td { color: var(--rojo); }
+  .lote-acciones { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .conv-admin .msg .globo { font-size: .9rem; }
+
+  /* ---------- guía y visor ---------- */
+  .guia { position: fixed; inset: 0; background: rgba(0,12,44,.5); display: grid; place-items: center; z-index: 45; padding: 16px; }
+  .guia .caja { background: var(--tarjeta); border-radius: var(--r-xl); width: min(760px, 100%); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden;
+                box-shadow: var(--sombra-3); animation: aparecer .4s var(--muelle); }
+  .guia .cab-guia { padding: 22px 28px 16px; }
+  .guia .cab-guia b { font-family: var(--titular); font-size: 1.4rem; font-weight: 500; letter-spacing: -.01em; color: var(--azul); }
+  .guia .cab-guia small { float: right; margin-top: 8px; color: var(--suave); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .guia .progreso { height: 3px; background: rgba(0,24,88,.1); border-radius: 999px; margin-top: 14px; overflow: hidden; }
+  .guia .progreso div { height: 100%; background: var(--naranja); border-radius: 999px; transition: width .4s var(--muelle); }
+  .guia .cuerpo { padding: 8px 28px 20px; overflow-y: auto; font-size: 1.04rem; line-height: 1.6; }
+  .guia .cuerpo strong { color: var(--azul); font-weight: 600; }
+  .guia .cuerpo img { max-width: 100%; border: 1px solid var(--linea); border-radius: var(--r-m); margin-top: 12px; cursor: zoom-in; }
+  .guia .cuerpo .referencia { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--borde); color: var(--suave); }
+  .guia .cuerpo .referencia div { display: flex; gap: 8px; flex-wrap: wrap; }
+  .guia .cuerpo .referencia img { width: calc(50% - 4px); min-width: 200px; flex: 1; margin-top: 8px; }
+  .guia .cuerpo .fin { text-align: center; }
+  .guia .cuerpo .fin h3 { font-family: var(--titular); font-weight: 500; color: var(--verde); margin: 4px 0 8px; font-size: 1.7rem; letter-spacing: -.015em; }
+  .guia .cuerpo .fin .valorar { justify-content: center; }
+  .guia .botones { display: flex; gap: 8px; padding: 14px 28px 22px; flex-wrap: wrap; border-top: 1px solid var(--borde); }
+  .guia .botones .listo { margin-left: auto; }
+  /* ventana para pedir soporte (en lugar del cuadro del navegador) */
+  .dialogo { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 24px 24px 20px; border: none; border-radius: var(--r-xl);
+             background: var(--tarjeta); color: var(--texto); box-shadow: var(--sombra-3); overflow: auto; }
+  .dialogo::backdrop { background: rgba(0,12,44,.55); }
+  .dialogo form { display: grid; gap: 14px; }
+  .dialogo .d-cab { display: flex; gap: 14px; align-items: flex-start; }
+  .dialogo .d-icono { flex: none; width: 42px; height: 42px; border-radius: var(--r-m); display: grid; place-items: center; background: rgba(0,24,88,.06); color: var(--azul); }
+  .dialogo h3 { margin: 0; font-family: var(--titular); font-size: 1.4rem; line-height: 1.2; font-weight: 500; letter-spacing: -.01em; color: var(--azul); }
+  .dialogo .d-sub { margin: 4px 0 0; color: var(--suave); font-size: .9rem; }
+  .dialogo .d-cerrar { margin-left: auto; flex: none; width: 36px; height: 36px; border: none; border-radius: var(--r-s); background: transparent; color: var(--suave); font-size: 1.3rem; line-height: 1; }
+  .dialogo .d-cerrar:hover { background: rgba(0,24,88,.07); color: var(--azul); }
+  .dialogo .d-motivos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .dialogo .d-motivos button { border: 1px solid var(--linea); background: #fff; border-radius: 999px; padding: 7px 14px; font-size: .85rem; color: var(--azul); transition: border-color .18s, background .18s; }
+  .dialogo .d-motivos button:hover { border-color: var(--azul-3); }
+  .dialogo .d-etiqueta { margin: 0 0 -6px; font-size: .8rem; font-weight: 600; color: var(--suave); }
+  .dialogo .d-motivos.sugeridas { flex-direction: column; align-items: stretch; }
+  .dialogo .d-motivos.sugeridas button { text-align: left; border-radius: var(--r-m); padding: 10px 14px; line-height: 1.4; }
+  .dialogo .d-motivos .cargando { color: var(--terciario); font-size: .85rem; padding: 6px 2px; }
+  .dialogo .d-motivos button[aria-pressed="true"] { background: var(--dorado-2); border-color: rgba(245,138,0,.55); color: var(--sello); font-weight: 600; }
+  .dialogo label { font-weight: 600; font-size: .88rem; margin-top: 0; }
+  .dialogo textarea { width: 100%; min-height: 110px; resize: vertical; padding: 11px 13px; border: 1px solid var(--linea); border-radius: var(--r-m); background: #fff; line-height: 1.5; }
+  .dialogo textarea:focus { outline: none; border-color: var(--azul-3); box-shadow: var(--foco); }
+  .dialogo .d-pie { display: flex; justify-content: space-between; gap: 12px; font-size: .8rem; color: var(--terciario); font-variant-numeric: tabular-nums; }
+  .dialogo .d-envio { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: var(--r-m); background: rgba(0,24,88,.04); font-size: .85rem; color: var(--suave); }
+  .dialogo .d-error { color: var(--rojo); font-size: .85rem; min-height: 0; margin: 0; }
+  .dialogo .d-botones { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+  @media (max-width: 600px) {
+    .dialogo { width: 100vw; max-width: 100vw; max-height: 92dvh; margin: auto 0 0; border-radius: 18px 18px 0 0; }
+    /* abajo 24px: deja libre la barra de gestos de los celulares */
+    .dialogo { padding: 20px 16px 24px; }
+    .dialogo .d-botones .btn { flex: 1 1 auto; }
+  }
+  .visor { position: fixed; inset: 0; background: rgba(0,10,38,.88); display: grid; place-items: center; z-index: 50; padding: 24px; cursor: zoom-out; }
+  .visor img { max-width: 100%; max-height: 100%; border-radius: var(--r-m); background: #fff; box-shadow: var(--sombra-3); }
+
+  @media (max-width: 980px) {
+    .acceso.con-marca { grid-template-columns: 1fr; padding: 24px 16px; }
+    .marca-panel { display: none; }
+    .acceso.con-marca .tarjeta { margin: 0; }
+    .acceso.con-marca .tarjeta .logo { display: block; }
+  }
+  @media (max-width: 820px) {
+    .app { grid-template-columns: 1fr; }
+    .lateral { position: fixed; inset: 0 auto 0 0; width: 86%; max-width: 310px; z-index: 40; transform: translateX(-100%);
+               transition: transform .35s var(--muelle); box-shadow: var(--sombra-3); }
+    .lateral.abierto { transform: none; }
+    .velo-menu.abierto { display: block; position: fixed; inset: 0; z-index: 39; background: rgba(0,12,44,.5); }
+    .cerrar-menu { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; background: none; border: none; color: #fff; border-radius: var(--r-s); }
+    .conv button { opacity: .75; }
+    .barra { padding: 8px 12px; min-height: 56px; }
+    .barra .menu { display: grid; place-items: center; }
+    .estado-bot { display: none; }
+    .barra .soporte { padding: 7px 12px; font-size: .82rem; flex: none; }
+    .txt-largo { display: none; }
+    .mensajes { padding: 16px 12px 8px; }
+    .admin { padding: 16px 12px; }
+    .msg.bot .globo { padding: 14px 16px 16px; }
+    .voucher-cab { margin: 0 -16px 14px; padding: 0 16px 12px; }
+    .msg.usuario .globo { max-width: 88%; }
+    .msg.bot .globo ol > li { padding-left: 38px; }
+    .entrada { padding: 6px 10px 10px; }
+    .bienvenida h3 { font-size: 1.8rem; }
+    .ejemplos { grid-template-columns: 1fr; }
+    .guia .cab-guia, .guia .cuerpo, .guia .botones { padding-left: 18px; padding-right: 18px; }
+  }
+  /* ---------- todo cabe en la ventana visible: sin desplazar la página, con cualquier zoom o pantalla ---------- */
+  html, body { height: 100%; height: 100dvh; overflow: hidden; }
+  .app { height: 100vh; height: 100dvh; }
+  .acceso { height: 100vh; height: 100dvh; min-height: 0; overflow-y: auto; padding: clamp(8px, 3vh, 24px) 16px; }
+  .acceso.con-marca { padding: 0; }
+  /* la marca y la tarjeta se reducen con la altura de la ventana */
+  /* relleno lateral sin clamp (el revisor de diseno no lo evalua); el vertical se ajusta a la altura */
+  .marca-panel { padding: 56px 72px; padding-block: clamp(16px, 6vh, 56px); gap: clamp(10px, 3vh, 28px); min-height: 0; }
+  @media (max-width: 1200px) { .marca-panel { padding-inline: 40px; } }
+  .marca-panel .logo { height: clamp(70px, 22vh, 182px); width: clamp(135px, 42.4vh, 350px); }
+  .marca-panel h2 { font-size: clamp(1.5rem, 5vh, 2.55rem); margin-bottom: clamp(8px, 1.8vh, 14px); }
+  .marca-panel p { font-size: clamp(.9rem, 2vh, 1.05rem); margin-bottom: clamp(10px, 3vh, 28px); }
+  /* relleno por altura de la ventana (sin clamp: el revisor de diseno no lo evalua) */
+  .ventajas > div { padding: 12px 0; }
+  @media (max-height: 640px) { .ventajas > div { padding: 10px 0; } }
+  @media (min-height: 860px) { .ventajas > div { padding: 16px 0; } }
+  .tarjeta { padding: clamp(20px, 4vh, 36px) clamp(20px, 3vw, 32px) clamp(18px, 3.5vh, 32px); max-height: 100%; }
+  /* inicio: marca y formulario juntos y centrados, sin hueco en medio */
+  .acceso.con-marca { grid-template-columns: minmax(0, 1.08fr) minmax(400px, 1fr); align-items: stretch; padding: 0; }
+  .acceso.con-marca .marca-panel { justify-content: center; }
+  .acceso.con-marca .marca-pie { display: none; }
+  .acceso.con-marca .tarjeta { margin: clamp(12px, 3vh, 32px); }
+  .tarjeta .logo { height: clamp(44px, 9vh, 84px); width: clamp(104px, 21vh, 196px); margin-bottom: clamp(8px, 2.5vh, 24px); }
+  .tarjeta h1 { font-size: clamp(1.3rem, 3.6vh, 1.8rem); }
+  label { margin: clamp(8px, 1.8vh, 16px) 0 clamp(4px, .7vh, 6px); }
+  .campo { padding: clamp(8px, 1.4vh, 11px) 13px; }
+  .btn-primario { margin-top: clamp(14px, 3vh, 24px); padding: clamp(10px, 1.6vh, 13px) 16px; }
+  .pie { margin-top: clamp(10px, 3vh, 24px); }
+  /* bienvenida del chat: se reduce para caber sin desplazar */
+  .bienvenida { padding: clamp(8px, 5vh, 48px) 0 clamp(8px, 2vh, 24px); }
+  .bienvenida h3 { font-size: clamp(1.4rem, 4.6vh, 2.4rem); margin-bottom: clamp(6px, 1.4vh, 12px); }
+  .bienvenida p { margin-bottom: clamp(10px, 3.5vh, 32px); }
+  .ejemplos button { padding-top: clamp(6px, 1.7vh, 16px); padding-bottom: clamp(6px, 1.7vh, 16px); }
+  .mensajes { padding-top: clamp(12px, 3.5vh, 32px); }
+  .barra { min-height: clamp(48px, 7vh, 64px); }
+  .lateral .cab { padding-top: clamp(12px, 3vh, 24px); padding-bottom: clamp(8px, 2vh, 16px); }
+  .lateral .logo { height: clamp(52px, 11vh, 88px); }
+  @media (max-width: 820px) { .lateral .logo { width: calc(100% - 44px); } }
+  .lateral .nuevo { margin-top: clamp(8px, 2vh, 16px); }
+  .guia .caja { max-height: calc(100dvh - 32px); }
+  /* ventanas bajas (laptops pequeñas, zoom alto, celular girado): se quita lo accesorio */
+  @media (max-height: 720px) {
+    .ventajas small, .marca-pie { display: none; }
+    .ejemplos button:nth-child(n+5) { display: none; }
+  }
+  @media (max-height: 560px) {
+    .ventajas, .marca-panel p, .bienvenida p, .tarjeta p.sub, .tarjeta .pie, .entrada small, .estado-bot { display: none; }
+    .ejemplos button:nth-child(n+3) { display: none; }
+  }
+  @media (max-height: 420px) {
+    .tarjeta .logo, .acceso.con-marca .tarjeta .logo { display: none; }
+    .ejemplos { display: none; }
+  }
+  @media (max-width: 820px) and (max-height: 720px) {
+    .ejemplos button:nth-child(n+4) { display: none; }
+  }
+  /* celular y tablet: una sola columna (va despues de la regla de dos columnas, que si no la pisa) */
+  @media (max-width: 980px) {
+    .acceso.con-marca { grid-template-columns: minmax(0, 1fr); column-gap: 0; justify-items: center; align-content: safe center; padding: clamp(16px, 4vh, 24px) 16px; }
+    .acceso.con-marca .tarjeta { margin: 0; }
+  }
+  @media (max-width: 820px) { .bienvenida h3 { font-size: clamp(1.4rem, 3.6vh, 1.9rem); } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+
+<!-- ============ Inicio de sesion ============ -->
+<section id="vista-login" class="acceso con-marca oculto">
+  <div class="marca-panel">
+    <div class="logo" role="img" aria-label="EKAM PERÚ"></div>
+    <div>
+      <h2>El asistente de <span>EKAM PERÚ</span> para tus dudas de NAVASOFT.</h2>
+      <p>Respondemos con los manuales oficiales, paso a paso y con las capturas del sistema.</p>
+      <div class="ventajas">
+        <div><span aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><b>Respuestas de los manuales oficiales</b><small>Nada inventado: cada respuesta cita su página.</small></div></div>
+        <div><span aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><b>Guía paso a paso</b><small>Avanza a tu ritmo, con capturas de cada pantalla.</small></div></div>
+        <div><span aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><b>Dicta tu consulta</b><small>Habla y el asistente lo escribe por ti.</small></div></div>
+      </div>
+    </div>
+    <div class="marca-pie">EKAM PERÚ · ERP + IA + Transformación Digital</div>
+  </div>
+  <form class="tarjeta" id="form-login" autocomplete="on">
+    <div class="logo"></div>
+    <h1>Inicia sesión</h1>
+    <p class="sub">Asistente de EKAM PERÚ para NAVASOFT</p>
+    <label for="l-usuario">Usuario</label>
+    <input class="campo" id="l-usuario" autocomplete="username" required>
+    <label for="l-clave">Contraseña</label>
+    <input class="campo" id="l-clave" type="password" autocomplete="current-password" required>
+    <button class="btn btn-primario" id="l-boton">Ingresar</button>
+    <div class="error" id="l-error"></div>
+    <div class="pie">¿No tienes cuenta u olvidaste tu contraseña?<br>Comunícate con soporte de EKAM PERÚ.</div>
+  </form>
+</section>
+
+<!-- ============ Cambio de contrasena ============ -->
+<section id="vista-clave" class="acceso oculto">
+  <form class="tarjeta" id="form-clave">
+    <div class="logo"></div>
+    <h1 id="c-titulo">Cambia tu contraseña</h1>
+    <p class="sub" id="c-sub">Por seguridad, elige una contraseña nueva que solo tú conozcas.</p>
+    <label for="c-actual">Contraseña actual</label>
+    <input class="campo" id="c-actual" type="password" autocomplete="current-password" required>
+    <label for="c-nueva">Contraseña nueva (mínimo 8 caracteres)</label>
+    <input class="campo" id="c-nueva" type="password" autocomplete="new-password" minlength="8" required>
+    <label for="c-repetir">Repite la contraseña nueva</label>
+    <input class="campo" id="c-repetir" type="password" autocomplete="new-password" minlength="8" required>
+    <button class="btn btn-primario" id="c-boton">Guardar contraseña</button>
+    <div class="error" id="c-error"></div>
+    <div class="pie"><a href="#" id="c-volver">Volver</a> &nbsp;·&nbsp; <a href="#" id="c-salir">Entrar con otra cuenta</a></div>
+  </form>
+</section>
+
+<!-- ============ Aplicacion ============ -->
+<section id="vista-app" class="app oculto">
+  <div class="velo-menu" id="velo-menu"></div>
+  <aside class="lateral" id="lateral">
+    <div class="cab">
+      <button class="cerrar-menu" id="b-cerrar-menu" aria-label="Cerrar menú"><svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button type="button" class="logo" id="b-inicio" aria-label="EKAM PERÚ: ir al inicio" title="Ir al inicio"></button>
+      <button class="btn btn-dorado nuevo" id="b-nuevo"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nueva consulta</button>
+    </div>
+    <div class="buscador">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="buscar-conv" type="search" placeholder="Buscar conversación" aria-label="Buscar conversación" autocomplete="off">
+    </div>
+    <nav class="lista" id="lista"></nav>
+    <div class="usuario">
+      <div class="perfil"><span class="iniciales" id="u-iniciales"></span><div><b id="u-nombre"></b><small id="u-empresa"></small></div></div>
+      <div class="acciones">
+        <button id="b-admin" class="oculto"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Administración</button>
+        <button id="b-clave"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg>Contraseña</button>
+        <button id="b-salir"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/></svg>Salir</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="principal">
+    <header class="barra">
+      <button class="menu" id="b-menu" aria-label="Abrir menú"><svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="titulos"><h2 id="titulo">Asistente NAVASOFT</h2><small class="estado-bot"><span class="punto"></span>Asistente virtual de EKAM PERÚ · en línea</small></div>
+      <button class="btn btn-suave soporte" id="b-soporte" title="Pedir ayuda a una persona del equipo de soporte"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg><span class="txt-largo">Hablar con&nbsp;</span>soporte</button>
+    </header>
+
+    <!-- chat -->
+    <div id="zona-chat" class="principal" style="flex:1">
+      <div class="mensajes" id="mensajes"><div class="contenedor" id="contenedor"></div></div>
+      <div class="entrada">
+        <div class="adjunto oculto" id="adjunto">
+          <img id="adjunto-img" alt="Captura adjunta">
+          <div><b>Captura adjunta</b><small>El asistente leerá la pantalla y el mensaje de error.</small></div>
+          <button type="button" id="b-quitar-captura" aria-label="Quitar captura" title="Quitar captura">×</button>
+        </div>
+        <form id="form-msg" class="compositor">
+          <input type="file" id="archivo-captura" accept="image/*" hidden>
+          <button type="button" class="btn btn-suave clip" id="b-captura" aria-label="Adjuntar captura de pantalla" title="Adjuntar captura de pantalla (también puedes pegarla con Ctrl+V)"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l8-8"/></svg></button>
+          <textarea id="texto" rows="1" placeholder="Escribe tu consulta sobre NAVASOFT..." maxlength="2000"></textarea>
+          <button type="button" class="btn btn-suave microfono oculto" id="b-microfono" aria-label="Dictar por voz" title="Dictar por voz"></button>
+          <button class="btn btn-dorado enviar" id="b-enviar" aria-label="Enviar" title="Enviar"></button>
+        </form>
+        <small>Las respuestas se basan en los manuales oficiales de NAVASOFT. Si algo no está en los manuales, te lo diremos.</small>
+      </div>
+    </div>
+
+    <!-- administracion de usuarios -->
+    <div id="zona-admin" class="admin oculto">
+      <div class="contenedor">
+        <div class="pestanas">
+          <button type="button" data-panel="panel-tickets">Solicitudes de soporte<span class="cuenta oculto" id="cuenta-tickets"></span></button>
+          <button type="button" data-panel="panel-calidad">Calidad de respuestas</button>
+          <button type="button" data-panel="panel-usuarios">Usuarios</button>
+          <button type="button" data-panel="panel-manuales">Manuales</button>
+        </div>
+
+        <!-- solicitudes de soporte -->
+        <div id="panel-tickets" class="panel-admin">
+          <div class="panel">
+            <h3>Solicitudes de soporte</h3>
+            <p style="margin:0 0 12px;color:var(--suave);font-size:.9rem">Clientes que pidieron hablar con una persona. Abre la conversación para ver qué le respondió el asistente.</p>
+            <div class="tabla-env"><table>
+              <thead><tr><th>Fecha</th><th>Cliente</th><th>Detalle</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="t-tabla"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- calidad -->
+        <div id="panel-calidad" class="panel-admin oculto">
+          <div class="tarjetas-resumen" id="c-resumen"></div>
+          <div class="panel">
+            <h3>Preguntas que el asistente no pudo resolver</h3>
+            <p style="margin:0 0 12px;color:var(--suave);font-size:.9rem">Respuestas marcadas con 👎 o en las que los manuales no tenían la información. Sirven para decidir qué manuales o preguntas frecuentes escribir.</p>
+            <div class="tabla-env"><table>
+              <thead><tr><th>Fecha</th><th>Cliente</th><th>Pregunta</th><th>Motivo</th><th></th></tr></thead>
+              <tbody id="c-tabla"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- conversacion de un cliente (solo lectura) -->
+        <div id="panel-conversacion" class="panel-admin oculto">
+          <div class="panel">
+            <button type="button" class="btn btn-suave" id="v-volver">← Volver</button>
+            <h3 id="v-titulo" style="margin-top:14px"></h3>
+            <div class="conv-admin" id="v-mensajes"></div>
+          </div>
+        </div>
+
+        <!-- manuales: subir, revisar la copia sin datos reales y publicar -->
+        <div id="panel-manuales" class="panel-admin oculto">
+          <div class="panel">
+            <h3>Subir un manual</h3>
+            <p class="nota-panel">Sube el manual en PDF o Word. El servidor reemplaza los datos reales de las capturas (empresas, RUC,
+              usuarios, claves) por datos ficticios. Después descargas la copia para revisarla y, si está bien, la publicas:
+              recién ahí el asistente la usa para responder.</p>
+            <form id="form-manual">
+              <div class="form-fila">
+                <div><label for="m-archivo">Archivo (PDF o Word)</label>
+                  <input class="campo" type="file" id="m-archivo" accept=".pdf,.docx,.doc" required></div>
+                <div><label for="m-titulo">Título (como lo verán los clientes)</label>
+                  <input class="campo" id="m-titulo" maxlength="120" placeholder="ej. Manual de Tesorería V5" required></div>
+                <div><button class="btn btn-primario" style="margin-top:0" id="m-boton">Subir manual</button></div>
+              </div>
+            </form>
+            <div class="error" id="m-error"></div>
+          </div>
+          <div class="panel">
+            <h3>Manuales subidos</h3>
+            <div class="tabla-env"><table>
+              <thead><tr><th>Manual</th><th>Subido</th><th>Estado</th><th>Páginas</th><th></th></tr></thead>
+              <tbody id="m-tabla"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <div id="panel-usuarios" class="panel-admin oculto">
+        <div class="panel">
+          <h3>Crear cuenta de cliente</h3>
+          <form id="form-crear">
+            <div class="form-fila">
+              <div><label for="a-usuario">Usuario</label><input class="campo" id="a-usuario" placeholder="ej. mperez" required></div>
+              <div><label for="a-nombre">Nombre</label><input class="campo" id="a-nombre" placeholder="ej. María Pérez" required></div>
+              <div><label for="a-empresa">Empresa</label><input class="campo" id="a-empresa" placeholder="ej. Empresa SAC"></div>
+              <div><label for="a-rol">Rol</label>
+                <select class="campo" id="a-rol"><option value="cliente">Cliente</option><option value="admin">Administrador (EKAM)</option></select></div>
+              <div><label for="a-clave">Contraseña inicial</label>
+                <div class="clave-gen"><input class="campo" id="a-clave" minlength="8" required>
+                  <button type="button" class="btn btn-suave" id="a-generar" title="Generar contraseña" aria-label="Generar contraseña"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/></svg></button></div></div>
+              <div><button class="btn btn-primario" style="margin-top:0" id="a-boton">Crear cuenta</button></div>
+            </div>
+          </form>
+          <div class="error" id="a-error"></div>
+          <div id="a-aviso"></div>
+        </div>
+        <div class="panel">
+          <h3>Crear varias cuentas</h3>
+          <p class="nota-panel">Sube un Excel o CSV con las columnas <b>Nombre, Empresa, Celular</b> (y Correo, si lo tienes), o pega la
+            lista, una persona por línea. El celular y el correo son opcionales. El usuario y la contraseña inicial se generan solos.</p>
+          <form id="form-lote">
+            <div class="lote-archivo">
+              <input type="file" id="lt-archivo" accept=".xlsx,.xls,.csv,.txt" hidden>
+              <button type="button" class="btn btn-suave" id="lt-subir"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>Subir Excel o CSV</button>
+              <button type="button" class="btn btn-suave" id="lt-plantilla">Descargar plantilla</button>
+              <span class="lote-resumen" id="lt-archivo-nombre"></span>
+            </div>
+            <label for="lt-lista">Lista de personas</label>
+            <textarea class="campo lote-lista" id="lt-lista" rows="6" spellcheck="false"
+                      placeholder="María Pérez Ramos, Comercial Ejemplo SAC, 987654321, maria@ejemplo.com&#10;Juan Torres, Servicios Ejemplo EIRL, 912345678"></textarea>
+            <div class="lote-pie">
+              <span id="lt-resumen" class="lote-resumen"></span>
+              <button class="btn btn-primario" style="margin-top:0;width:auto" id="lt-boton">Crear cuentas</button>
+            </div>
+          </form>
+          <div class="error" id="lt-error"></div>
+          <div id="lt-resultado" class="oculto">
+            <div class="aviso">Las contraseñas solo se muestran ahora. Envíaselas a cada persona antes de salir de esta pantalla;
+              al entrar por primera vez, el sistema les pedirá crear su propia contraseña.</div>
+            <div class="tabla-env"><table>
+              <thead><tr><th>Nombre</th><th>Empresa</th><th>Usuario</th><th>Contraseña inicial</th><th>Enviar</th></tr></thead>
+              <tbody id="lt-tabla"></tbody>
+            </table></div>
+            <div class="lote-acciones"><button type="button" class="btn btn-suave" id="lt-excel">Descargar Excel</button></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Cuentas registradas</h3>
+          <div class="tabla-env">
+            <table>
+              <thead><tr><th>Usuario</th><th>Nombre</th><th>Empresa</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th>Chats</th><th></th></tr></thead>
+              <tbody id="a-tabla"></tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<dialog class="dialogo" id="dlg-soporte" aria-labelledby="ds-titulo">
+  <form method="dialog" id="ds-form" novalidate>
+    <div class="d-cab">
+      <span class="d-icono" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
+      <div><h3 id="ds-titulo">Hablar con soporte</h3><p class="d-sub" id="ds-sub">Un especialista de EKAM PERÚ te atenderá por WhatsApp.</p></div>
+      <button type="button" class="d-cerrar" id="ds-cerrar" aria-label="Cerrar">×</button>
+    </div>
+    <p class="d-etiqueta" id="ds-etiqueta">Elige un motivo</p>
+    <div class="d-motivos" id="ds-motivos" role="group" aria-labelledby="ds-etiqueta">
+      <button type="button" aria-pressed="false">Me aparece un error</button>
+      <button type="button" aria-pressed="false">No encuentro cómo hacerlo</button>
+      <button type="button" aria-pressed="false">La respuesta no me sirvió</button>
+      <button type="button" aria-pressed="false">Problema con SUNAT</button>
+    </div>
+    <div>
+      <label for="ds-detalle">¿Qué necesitas?</label>
+      <textarea id="ds-detalle" maxlength="2000" placeholder="Ejemplo: al emitir una factura me sale «serie no válida» en el módulo de Ventas."></textarea>
+      <div class="d-pie"><span>Incluye el módulo, el mensaje de error o el número de documento.</span><span id="ds-cuenta">0/2000</span></div>
+    </div>
+    <div class="d-envio" id="ds-envio"></div>
+    <p class="d-error" id="ds-error" role="alert"></p>
+    <div class="d-botones">
+      <button type="button" class="btn btn-suave" id="ds-cancelar">Cancelar</button>
+      <button type="submit" class="btn btn-dorado" id="ds-enviar">Continuar</button>
+    </div>
+  </form>
+</dialog>
+<div class="visor oculto" id="visor"><img alt="Captura ampliada"></div>
+<div class="guia oculto" id="guia" role="dialog" aria-modal="true" aria-labelledby="g-titulo">
+  <div class="caja">
+    <div class="cab-guia"><b id="g-titulo">Modo guía</b><small id="g-cuenta"></small><div class="progreso"><div id="g-barra"></div></div></div>
+    <div class="cuerpo" id="g-cuerpo"></div>
+    <div class="botones">
+      <button type="button" class="btn btn-suave" id="g-salir">Salir</button>
+      <button type="button" class="btn btn-suave" id="g-anterior"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Anterior</button>
+      <button type="button" class="btn btn-dorado listo" id="g-siguiente"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Listo, siguiente paso</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/webhook/navasoft-api';
+const EJEMPLOS = [
+  { icono: '💰', tema: 'Caja chica', texto: '¿Cómo abro una nueva caja chica?' },
+  { icono: '🧾', tema: 'Caja chica', texto: '¿Cómo hago el reembolso de la caja chica?' },
+  { icono: '🚚', tema: 'Guías de remisión', texto: '¿Cómo emito una guía de remisión de transportista?' },
+  { icono: '📦', tema: 'Inventarios', texto: '¿Cómo veo el kardex de un producto?' },
+  { icono: '🏦', tema: 'Ventas', texto: '¿Cómo registro un comprobante de retención de un cliente?' },
+  { icono: '📚', tema: 'Manuales', texto: '¿Qué temas tiene el manual de Ventas?' },
+];
+// iconos de los botones (dibujos SVG, se ven igual en todos los navegadores)
+const ICONOS = {
+  mic: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>',
+  parar: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  espera: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="girando"><path d="M12 3a9 9 0 1 0 9 9"/></svg>',
+  enviar: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>',
+};
+const AVATAR_BOT = '<div class="avatar" aria-hidden="true">E</div>';
+document.getElementById('b-enviar').innerHTML = ICONOS.enviar;
+document.getElementById('b-microfono').innerHTML = ICONOS.mic;
+const $ = (id) => document.getElementById(id);
+let estado = { token: null, usuario: null, conversacion: null, conversaciones: [], enviando: false };
+
+// ---------- ver u ocultar la contrasena mientras se escribe ----------
+const OJO = {
+  ver: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  ocultar: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3 3.9"/><path d="M6.5 6.6A17.3 17.3 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3 3l18 18"/></svg>',
+};
+document.querySelectorAll('input[type="password"]').forEach((campo) => {
+  const caja = document.createElement('div'); caja.className = 'clave-ver';
+  const b = document.createElement('button'); b.type = 'button';
+  const poner = (visible) => {
+    campo.type = visible ? 'text' : 'password';
+    b.innerHTML = visible ? OJO.ocultar : OJO.ver;
+    b.title = visible ? 'Ocultar contraseña' : 'Ver contraseña';
+    b.setAttribute('aria-label', b.title); b.setAttribute('aria-pressed', String(visible));
+  };
+  campo.replaceWith(caja); caja.append(campo, b); poner(false);
+  b.addEventListener('click', () => { poner(campo.type === 'password'); campo.focus(); });
+  // al enviar o limpiar el formulario la contrasena vuelve a quedar oculta
+  campo.form.addEventListener('submit', () => poner(false));
+  campo.form.addEventListener('reset', () => poner(false));
+});
+
+// ---------- almacenamiento local (puede no estar disponible) ----------
+const guardar = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+const leer = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+// ---------- llamadas al servidor ----------
+async function api(accion, datos = {}) {
+  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                               body: JSON.stringify({ accion, token: estado.token, ...datos }) });
+  if (!r.ok) throw new Error('El servidor no respondió (' + r.status + '). Intenta nuevamente.');
+  const res = await r.json();
+  if (res && res.sesion === false) { cerrarSesion(res.error); throw new Error(res.error); }
+  return res;
+}
+
+function mostrar(vista) {
+  ['vista-login', 'vista-clave', 'vista-app'].forEach((v) => $(v).classList.toggle('oculto', v !== vista));
+}
+
+// ---------- markdown seguro ----------
+marked.setOptions({ breaks: true });
+DOMPurify.addHook('afterSanitizeAttributes', (n) => {
+  if (n.tagName === 'A') { n.setAttribute('target', '_blank'); n.setAttribute('rel', 'noopener'); }
+});
+const html = (md) => DOMPurify.sanitize(marked.parse(md || ''));
+const escapar = (t) => { const d = document.createElement('div'); d.textContent = t; return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+
+// ---------- inicio de sesion ----------
+$('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('l-error').textContent = ''; $('l-boton').disabled = true;
+  try {
+    const r = await api('login', { usuario: $('l-usuario').value, clave: $('l-clave').value });
+    if (!r.ok) { $('l-error').textContent = r.error; return; }
+    estado.token = r.token; guardar('navasoft_token', r.token);
+    estado.usuario = r; $('l-clave').value = '';
+    r.debe_cambiar ? pedirCambioClave(true) : entrar();
+  } catch (err) { $('l-error').textContent = err.message; }
+  finally { $('l-boton').disabled = false; }
+});
+
+function cerrarSesion(mensaje) {
+  estado = { token: null, usuario: null, conversacion: null, conversaciones: [], enviando: false };
+  guardar('navasoft_token', null);
+  mostrar('vista-login');
+  $('l-error').textContent = mensaje || '';
+  $('l-usuario').focus();
+}
+$('b-salir').addEventListener('click', async () => { try { await api('logout'); } catch (e) {} cerrarSesion(); });
+
+// ---------- cambio de contrasena ----------
+function pedirCambioClave(obligatorio) {
+  $('form-clave').reset(); $('c-error').textContent = '';
+  $('c-titulo').textContent = obligatorio ? 'Crea tu contraseña' : 'Cambiar contraseña';
+  $('c-sub').textContent = obligatorio ? 'Es tu primer ingreso: reemplaza la contraseña que te dio EKAM por una que solo tú conozcas.'
+                                       : 'Elige una contraseña nueva de al menos 8 caracteres.';
+  $('c-volver').classList.toggle('oculto', obligatorio);
+  mostrar('vista-clave'); $('c-actual').focus();
+}
+$('b-clave').addEventListener('click', () => pedirCambioClave(false));
+$('c-volver').addEventListener('click', (e) => { e.preventDefault(); entrar(); });
+// salida desde la pantalla de cambio de contrasena (tambien cuando es obligatoria en el primer ingreso)
+$('c-salir').addEventListener('click', async (e) => { e.preventDefault(); try { await api('logout'); } catch (err) {} cerrarSesion(); });
+$('form-clave').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if ($('c-nueva').value !== $('c-repetir').value) { $('c-error').textContent = 'Las contraseñas nuevas no coinciden.'; return; }
+  $('c-boton').disabled = true;
+  try {
+    const r = await api('cambiar_clave', { actual: $('c-actual').value, nueva: $('c-nueva').value });
+    if (!r.ok) { $('c-error').textContent = r.error; return; }
+    estado.usuario.debe_cambiar = false; entrar();
+  } catch (err) { $('c-error').textContent = err.message; }
+  finally { $('c-boton').disabled = false; }
+});
+
+// ---------- aplicacion ----------
+async function entrar() {
+  mostrar('vista-app');
+  $('u-nombre').textContent = estado.usuario.nombre;
+  $('u-empresa').textContent = estado.usuario.empresa || '';
+  $('u-iniciales').textContent = (estado.usuario.nombre || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+  $('b-admin').classList.toggle('oculto', estado.usuario.rol !== 'admin');
+  verChat();
+  await cargarConversaciones();
+  nuevoChat();
+}
+
+function grupoFecha(iso) {
+  const d = new Date(iso), hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const dias = Math.floor((hoy - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+  if (dias <= 0) return 'Hoy';
+  if (dias === 1) return 'Ayer';
+  if (dias < 7) return 'Últimos 7 días';
+  if (dias < 30) return 'Últimos 30 días';
+  return 'Anteriores';
+}
+
+async function cargarConversaciones() {
+  const r = await api('conversaciones');
+  estado.conversaciones = r.conversaciones || [];
+  pintarLista();
+}
+
+function pintarLista() {
+  const lista = $('lista'); lista.innerHTML = '';
+  if (!estado.conversaciones.length) {
+    lista.innerHTML = '<div class="vacio">Aún no tienes conversaciones. Escribe tu primera consulta.</div>'; return;
+  }
+  let grupo = '';
+  for (const c of estado.conversaciones) {
+    const g = grupoFecha(c.actualizado);
+    if (g !== grupo) { grupo = g; lista.insertAdjacentHTML('beforeend', `<div class="grupo">${g}</div>`); }
+    const el = document.createElement('div');
+    el.className = 'conv' + (c.id === estado.conversacion ? ' activa' : '');
+    el.innerHTML = `<span title="${escapar(c.titulo)}">${escapar(c.titulo)}</span><button class="b-renombrar" title="Cambiar nombre" aria-label="Cambiar nombre"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button class="b-borrar" title="Eliminar conversación" aria-label="Eliminar conversación"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></button>`;
+    el.addEventListener('click', () => abrirConversacion(c.id));
+    el.querySelector('.b-borrar').addEventListener('click', (e) => { e.stopPropagation(); borrarConversacion(c); });
+    el.querySelector('.b-renombrar').addEventListener('click', (e) => { e.stopPropagation(); renombrarConversacion(c); });
+    lista.appendChild(el);
+  }
+  filtrarLista();
+}
+
+// buscador de conversaciones: oculta las que no coinciden y los grupos (Hoy, Ayer...) que quedan vacios
+function filtrarLista() {
+  const q = $('buscar-conv').value.trim().toLowerCase();
+  let grupoActual = null, visibles = 0;
+  for (const el of $('lista').children) {
+    if (el.classList.contains('grupo')) {
+      if (grupoActual) grupoActual.style.display = visibles ? '' : 'none';
+      grupoActual = el; visibles = 0;
+    } else if (el.classList.contains('conv')) {
+      const ok = !q || el.textContent.toLowerCase().includes(q);
+      el.style.display = ok ? '' : 'none';
+      if (ok) visibles++;
+    }
+  }
+  if (grupoActual) grupoActual.style.display = visibles ? '' : 'none';
+}
+$('buscar-conv').addEventListener('input', filtrarLista);
+
+function cerrarMenuMovil() { $('lateral').classList.remove('abierto'); $('velo-menu').classList.remove('abierto'); }
+$('b-menu').addEventListener('click', () => { $('lateral').classList.add('abierto'); $('velo-menu').classList.add('abierto'); });
+$('velo-menu').addEventListener('click', cerrarMenuMovil);
+$('b-cerrar-menu').addEventListener('click', cerrarMenuMovil);
+
+function verChat() { $('zona-chat').classList.remove('oculto'); $('zona-admin').classList.add('oculto'); $('b-soporte').classList.remove('oculto'); }
+
+function nuevoChat() {
+  cancelarDictado(); $('texto').value = '';
+  verChat(); cerrarMenuMovil();
+  estado.conversacion = null; pintarLista();
+  $('titulo').textContent = 'Nuevo chat';
+  const nombre = (estado.usuario.nombre || '').split(' ')[0];
+  $('contenedor').innerHTML = `<div class="bienvenida">
+    <h3>¡Hola${nombre ? ', ' + escapar(nombre) : ''}! <span>¿En qué te ayudamos hoy?</span></h3>
+    <p>Pregúntame cómo hacer algo en NAVASOFT y te lo explico paso a paso, con las capturas del sistema y la página exacta del manual.</p>
+    <div class="ejemplos">${EJEMPLOS.map((e, i) => `<button type="button" data-texto="${escapar(e.texto)}"><span><small>${escapar(e.tema)}</small>${escapar(e.texto)}</span><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>`).join('')}</div></div>`;
+  $('contenedor').querySelectorAll('.ejemplos button').forEach((b) => b.addEventListener('click', () => { $('texto').value = b.dataset.texto; enviar(); }));
+  $('texto').focus();
+}
+$('b-nuevo').addEventListener('click', nuevoChat);
+$('b-inicio').addEventListener('click', nuevoChat);   // el logo lleva al inicio
+
+async function abrirConversacion(id) {
+  verChat(); cerrarMenuMovil();
+  estado.conversacion = id; pintarLista();
+  const c = estado.conversaciones.find((x) => x.id === id);
+  $('titulo').textContent = c ? c.titulo : 'Conversación';
+  $('contenedor').innerHTML = '<div class="escribiendo">Cargando conversación…</div>';
+  const r = await api('mensajes', { conversacion_id: id });
+  $('contenedor').innerHTML = '';
+  if (!r.ok) { $('contenedor').innerHTML = `<div class="error">${escapar(r.error)}</div>`; return; }
+  const ultimoBot = r.mensajes.map((m) => m.rol).lastIndexOf('bot');
+  r.mensajes.forEach((m, i) => agregarMensaje(m.rol, m.texto, { id: m.id, valoracion: m.valoracion, conSugerencias: i === ultimoBot, captura: m.captura }));
+  bajar();
+}
+
+async function renombrarConversacion(c) {
+  const nuevo = prompt('Nuevo nombre para esta conversación:', c.titulo);
+  if (nuevo === null || !nuevo.trim()) return;
+  const r = await api('renombrar', { conversacion_id: c.id, titulo: nuevo.trim() });
+  if (!r.ok) { alert(r.error); return; }
+  if (estado.conversacion === c.id) $('titulo').textContent = nuevo.trim();
+  await cargarConversaciones();
+}
+
+// el titulo lo crea la IA unos segundos despues de responder: se vuelve a consultar la lista
+function refrescarTitulo(id) {
+  setTimeout(async () => {
+    try {
+      await cargarConversaciones();
+      const c = estado.conversaciones.find((x) => x.id === id);
+      if (c && estado.conversacion === id) $('titulo').textContent = c.titulo;
+    } catch (e) {}
+  }, 5000);
+}
+
+async function borrarConversacion(c) {
+  if (!confirm(`¿Eliminar la conversación "${c.titulo}"? No se puede deshacer.`)) return;
+  await api('borrar_conversacion', { conversacion_id: c.id });
+  if (estado.conversacion === c.id) nuevoChat();
+  await cargarConversaciones();
+}
+
+// el asistente agrega al final [[sugerencias: a | b | c]]; se separa del texto para mostrarlas como botones
+function separar(texto) {
+  let sugerencias = [];
+  const limpio = String(texto || '').replace(/\[\[sugerencias:([^\]]*)\]\]/g, (_, s) => {
+    sugerencias = s.split('|').map((x) => x.trim()).filter(Boolean);
+    return '';
+  }).trim();
+  return { limpio, sugerencias };
+}
+
+// cabecera del comprobante: "Respuesta del asistente" y la fuente sellada (manual y pagina), si la hay
+function cabeceraVoucher(fuente) {
+  const cab = document.createElement('div');
+  cab.className = 'voucher-cab';
+  cab.innerHTML = '<small>Respuesta del asistente</small>';
+  const texto = fuente ? fuente.textContent.replace('📄', '').replace(/^\s*Fuentes?:\s*/i, '').trim() : '';
+  if (texto) {
+    const manual = texto.split(/,|\]/)[0].replace(/^\[/, '').replace(/^Manual(?: de)?\s*:?\s*/i, '').replace(/\s*V\d+$/i, '').trim();
+    const pag = texto.match(/p[áa]gina\s*(\d+)/i);
+    const sello = document.createElement('span');
+    sello.className = 'sello'; sello.title = 'Fuente: ' + texto;
+    sello.textContent = manual + (pag ? ' · Pág. ' + pag[1] : '');
+    cab.appendChild(sello);
+  }
+  return cab;
+}
+function quitarSugerencias() { document.querySelectorAll('#contenedor .sugerencias').forEach((s) => s.remove()); }
+
+function agregarMensaje(rol, texto, { id = null, valoracion = null, conSugerencias = false, contenedor = $('contenedor'), soloLectura = false, captura = null } = {}) {
+  const { limpio, sugerencias } = separar(texto);
+  const d = document.createElement('div');
+  d.className = 'msg ' + rol;
+  const [propio, conCaptura] = rol === 'usuario' ? partirCaptura(limpio) : [limpio, false];
+  d.innerHTML = (rol === 'bot' ? AVATAR_BOT : '') + `<div class="globo">${rol === 'bot' ? html(limpio) : escapar(propio)}</div>`;
+  if (captura && /^data:image\/jpeg;base64,/.test(captura)) {
+    const img = document.createElement('img'); img.className = 'captura'; img.src = captura; img.alt = 'Captura enviada';
+    d.querySelector('.globo').prepend(img);
+  } else if (conCaptura) {
+    // la captura se guarda 30 dias; despues solo queda la marca
+    d.querySelector('.globo').insertAdjacentHTML('beforeend', '<span class="chip-captura">Con captura de pantalla</span>');
+  }
+  // la linea de fuente (📄) se muestra como una etiqueta aparte
+  d.querySelectorAll('.globo > p').forEach((p) => { if (p.textContent.trim().startsWith('📄')) p.classList.add('fuente'); });
+  if (rol === 'bot') d.querySelector('.globo').prepend(cabeceraVoucher(d.querySelector('.globo p.fuente')));
+  // listas que no empiezan en 1 (por ejemplo cuando una captura corta la lista): el numero del circulo sigue la secuencia
+  d.querySelectorAll('.globo ol[start]').forEach((ol) => { ol.style.counterReset = `paso ${(parseInt(ol.getAttribute('start'), 10) || 1) - 1}`; });
+  d.querySelectorAll('img').forEach((img) => img.addEventListener('click', () => ampliar(img.src)));
+  if (rol === 'bot' && !soloLectura) agregarBotonGuia(d.querySelector('.globo'), id);
+  if (rol === 'bot' && id && !soloLectura) d.querySelector('.globo').appendChild(barraValorar(id, valoracion));
+  if (rol === 'bot' && soloLectura && valoracion) {
+    d.querySelector('.globo').insertAdjacentHTML('beforeend', `<div class="valorar">${valoracion > 0 ? 'Al cliente le sirvió' : 'Al cliente no le sirvió'}</div>`);
+  }
+  contenedor.appendChild(d);
+  if (conSugerencias && sugerencias.length && !soloLectura) {
+    const s = document.createElement('div');
+    s.className = 'sugerencias';
+    sugerencias.forEach((t) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = t;
+      b.addEventListener('click', () => { $('texto').value = t; enviar(); });
+      s.appendChild(b);
+    });
+    contenedor.appendChild(s);
+  }
+  return d;
+}
+
+// ---------- modo guia: muestra los pasos numerados de una respuesta de uno en uno ----------
+// cada <li> de las listas numeradas es un paso. Una captura entre dos listas se muestra en el paso anterior a ella;
+// las capturas que quedan al final de la respuesta no se sabe a que paso pertenecen: se muestran como referencia en todos
+function pasosDe(globo) {
+  const pasos = [];
+  let pendientes = [];
+  for (const el of globo.children) {
+    if (el.tagName === 'OL') {
+      if (pasos.length && pendientes.length) pasos[pasos.length - 1] += pendientes.join('');
+      pendientes = [];
+      el.querySelectorAll(':scope > li').forEach((li) => pasos.push(li.innerHTML));
+    } else if (pasos.length && el.querySelector('img') && !el.textContent.includes('📄')) {
+      pendientes.push(...[...el.querySelectorAll('img')].map((i) => i.outerHTML));
+    }
+  }
+  return { pasos, referencia: pendientes };
+}
+
+function agregarBotonGuia(globo, id) {
+  const { pasos, referencia } = pasosDe(globo);
+  const fuente = [...globo.querySelectorAll(':scope > p')].find((p) => p.textContent.includes('📄'));
+  if (pasos.length < 3 || !fuente) return;   // listas de opciones o aclaraciones no son pasos de un procedimiento
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'b-guia';
+  b.innerHTML = `<svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>Guíame paso a paso (${pasos.length} pasos)`;
+  b.addEventListener('click', () => abrirGuia(pasos, referencia, fuente ? fuente.innerHTML : '', id));
+  globo.appendChild(b);
+}
+
+const guia = { pasos: [], referencia: [], actual: 0, fuente: '', id: null };
+
+function abrirGuia(pasos, referencia, fuente, id) {
+  Object.assign(guia, { pasos, referencia, actual: 0, fuente, id });
+  $('guia').classList.remove('oculto');
+  pintarGuia();
+}
+
+function pintarGuia() {
+  const total = guia.pasos.length, fin = guia.actual >= total;
+  $('g-cuenta').textContent = fin ? 'Completado' : `Paso ${guia.actual + 1} de ${total}`;
+  $('g-barra').style.width = `${Math.round((Math.min(guia.actual + 1, total) / total) * 100)}%`;
+  $('g-anterior').disabled = guia.actual === 0;
+  $('g-siguiente').classList.toggle('oculto', fin);
+  $('g-siguiente').textContent = guia.actual === total - 1 ? 'Listo, terminé' : 'Listo, siguiente paso';
+  $('g-salir').textContent = fin ? 'Cerrar' : 'Salir';
+  const cuerpo = $('g-cuerpo');
+  if (fin) {
+    cuerpo.innerHTML = `<div class="fin"><h3>¡Terminaste!</h3><p>Completaste los ${total} pasos.</p>${guia.fuente ? `<p>${guia.fuente}</p>` : ''}</div>`;
+    if (guia.id) cuerpo.querySelector('.fin').appendChild(barraValorar(guia.id, null));
+  } else {
+    cuerpo.innerHTML = `<p><b>Paso ${guia.actual + 1}.</b></p>${guia.pasos[guia.actual]}`
+      + (guia.referencia.length ? `<div class="referencia"><small>Capturas de referencia (clic para ampliar):</small><div>${guia.referencia.join('')}</div></div>` : '');
+  }
+  cuerpo.querySelectorAll('img').forEach((img) => img.addEventListener('click', () => ampliar(img.src)));
+  cuerpo.scrollTop = 0;
+  (fin ? $('g-salir') : $('g-siguiente')).focus();
+}
+
+function cerrarGuia() { $('guia').classList.add('oculto'); $('texto').focus(); }
+$('g-siguiente').addEventListener('click', () => { guia.actual++; pintarGuia(); });
+$('g-anterior').addEventListener('click', () => { if (guia.actual > 0) { guia.actual--; pintarGuia(); } });
+$('g-salir').addEventListener('click', cerrarGuia);
+document.addEventListener('keydown', (e) => {
+  if ($('guia').classList.contains('oculto') || !$('visor').classList.contains('oculto')) return;
+  if (e.key === 'Escape') cerrarGuia();
+  if (e.key === 'ArrowRight' && guia.actual < guia.pasos.length) { guia.actual++; pintarGuia(); }
+  if (e.key === 'ArrowLeft' && guia.actual > 0) { guia.actual--; pintarGuia(); }
+});
+
+// ---------- dictado por voz en vivo ----------
+// El portal capta el sonido del microfono, mide el volumen y guarda solo los tramos donde hablas (los silencios
+// largos se quitan): Whisper recibe tu voz sin silencios, que es cuando se equivoca o "inventa" frases.
+// Todo lo dicho se transcribe junto, con contexto, asi entiende frases naturales. Mientras hablas:
+//  - en Chrome y Edge las palabras aparecen al instante con el dictado propio del navegador;
+//  - en Opera (no tiene ese dictado) se vuelve a transcribir cada ~2 s.
+// Al terminar (o si cambias de pestana) se transcribe todo una ultima vez y queda en la caja para corregirlo.
+const VOZ = '/webhook/navasoft-voz';
+// la usan enviar() y nuevoChat(); es una funcion declarada para que exista desde que carga la pagina
+var accionCancelarDictado = null;
+function cancelarDictado() { if (accionCancelarDictado) accionCancelarDictado(); }
+const FANTASMA = /^(gracias por ver( el video)?\.?|subt[ií]tulos? (realizados )?por.*|¡?suscr[ií]bete!?|amara\.org.*|\.+)$/i;
+const CADA_MS = 2000;      // vista previa en Opera (el plan gratis de Groq permite ~20 pedidos por minuto)
+const HZ = 16000;          // Whisper trabaja a 16 kHz
+let sinDictadoNavegador = false;
+try { sinDictadoNavegador = sessionStorage.getItem('sin_dictado_navegador') === '1'; } catch (e) {}
+
+// quita frases repetidas seguidas ("¿Qué? ¿Qué?", una frase dos veces) que Whisper a veces produce
+function sinRepetidos(texto) {
+  const frases = String(texto).match(/[^.?!¿¡]*[¿¡]?[^.?!]*[.?!]*/g).map((f) => f.trim()).filter(Boolean);
+  const salida = [];
+  for (const f of frases) {
+    const clave = f.toLowerCase().replace(/[^a-záéíóúñü0-9 ]/g, '').trim();
+    const ultima = salida.length ? salida[salida.length - 1].toLowerCase().replace(/[^a-záéíóúñü0-9 ]/g, '').trim() : null;
+    if (clave && clave !== ultima) salida.push(f);
+  }
+  return corregirTerminos(salida.join(' ').replace(/\s+/g, ' ').trim());
+}
+
+// palabras de NAVASOFT que Whisper suele escribir de otra forma
+const TERMINOS = [
+  [/\bc[aá]rdex\b/gi, 'kardex'], [/\bsunat\b/gi, 'SUNAT'], [/\bsire\b/gi, 'SIRE'], [/\bnava ?sof(t|f)?\b/gi, 'NAVASOFT'],
+  [/\bigv\b/gi, 'IGV'], [/\bruc\b/gi, 'RUC'], [/\bpdt\b/gi, 'PDT'], [/\bple\b/gi, 'PLE'], [/\be ?kam\b/gi, 'EKAM'],
+];
+function corregirTerminos(texto) { return TERMINOS.reduce((t, [patron, bien]) => t.replace(patron, bien), texto); }
+
+// arma un archivo WAV (16 kHz, mono) a partir de las muestras de sonido
+function aWav(muestras) {
+  const datos = new DataView(new ArrayBuffer(44 + muestras.length * 2));
+  const texto = (pos, t) => { for (let i = 0; i < t.length; i++) datos.setUint8(pos + i, t.charCodeAt(i)); };
+  texto(0, 'RIFF'); datos.setUint32(4, 36 + muestras.length * 2, true); texto(8, 'WAVE'); texto(12, 'fmt ');
+  datos.setUint32(16, 16, true); datos.setUint16(20, 1, true); datos.setUint16(22, 1, true);
+  datos.setUint32(24, HZ, true); datos.setUint32(28, HZ * 2, true); datos.setUint16(32, 2, true); datos.setUint16(34, 16, true);
+  texto(36, 'data'); datos.setUint32(40, muestras.length * 2, true);
+  for (let i = 0; i < muestras.length; i++) {
+    const v = Math.max(-1, Math.min(1, muestras[i]));
+    datos.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+  }
+  return new Blob([datos], { type: 'audio/wav' });
+}
+
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.AudioContext || window.webkitAudioContext)) {
+  const mic = $('b-microfono');
+  const caja = $('texto');
+  const DictadoNavegador = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let s = null;   // grabacion en curso
+  mic.classList.remove('oculto');
+
+  const estadoMic = (clase, icono, titulo) => {
+    mic.classList.remove('escuchando', 'procesando');
+    if (clase) mic.classList.add(clase);
+    mic.innerHTML = { '🎤': ICONOS.mic, '⏹': ICONOS.parar, '⏳': ICONOS.espera }[icono] || icono; mic.title = titulo; mic.disabled = clase === 'procesando';
+  };
+
+  const pintar = () => {
+    if (!s) return;
+    const dicho = s.textoWhisper || s.textoNavegador;
+    caja.value = [s.previo, dicho].filter((x) => x && x.trim()).join(' ');
+    ajustarAltura(); caja.scrollTop = caja.scrollHeight;
+  };
+
+  // ---- audio con voz: los bloques con voz + 0,3 s antes y despues; los silencios largos quedan en 0,3 s
+  function audioConVoz() {
+    const b = s.bloques, margen = Math.ceil(0.3 * HZ / s.tamBloque);
+    const usar = b.map((x) => x.voz);
+    b.forEach((x, i) => { if (x.voz) for (let k = Math.max(0, i - margen); k <= Math.min(b.length - 1, i + margen); k++) usar[k] = true; });
+    const partes = b.filter((_, i) => usar[i]).map((x) => x.datos);
+    const total = partes.reduce((n, p) => n + p.length, 0);
+    const muestras = new Float32Array(total); let pos = 0;
+    for (const p of partes) { muestras.set(p, pos); pos += p.length; }
+    return muestras;
+  }
+
+  async function aWhisper(muestras) {
+    const base64 = await new Promise((ok, mal) => {
+      const l = new FileReader(); l.onload = () => ok(String(l.result).split(',')[1]); l.onerror = mal; l.readAsDataURL(aWav(muestras));
+    });
+    const r = await fetch(VOZ, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                 body: JSON.stringify({ token: estado.token, audio: base64, tipo: 'audio/wav' }) }).then((x) => x.json());
+    if (r.sesion === false) { cerrarSesion(r.error); throw new Error('sesion'); }
+    if (r.ok) { const t = sinRepetidos(r.texto || ''); return FANTASMA.test(t) ? '' : t; }
+    const e = new Error(r.error || 'error'); e.limite = !!r.limite; throw e;
+  }
+
+  // ---- vista previa con Whisper (Opera y navegadores sin dictado propio)
+  async function vistaPrevia() {
+    if (!s || s.terminando || s.enviando || !s.huboVoz) return;
+    if (!sinDictadoNavegador && s.navegadorFunciona) return;     // en Chrome/Edge ya se ve en vivo
+    const ahora = Date.now();
+    if (ahora - s.ultimoEnvio < CADA_MS || ahora < s.pausaHasta || s.bloquesVoz === s.vozEnviada) return;
+    s.enviando = true; s.ultimoEnvio = ahora; s.vozEnviada = s.bloquesVoz;
+    const grabacion = s;
+    try {
+      const texto = await aWhisper(audioConVoz());
+      if (s === grabacion && !s.terminando && texto) { s.textoWhisper = texto; pintar(); }
+    } catch (e) { if (e.limite && s) s.pausaHasta = Date.now() + 8000; }
+    finally { if (s === grabacion) s.enviando = false; }
+  }
+
+  // ---- dictado propio del navegador (instantaneo en Chrome y Edge; en Opera falla y se desactiva solo)
+  function iniciarDictadoNavegador() {
+    if (!DictadoNavegador || sinDictadoNavegador) return;
+    const rec = new DictadoNavegador();
+    rec.lang = 'es-PE'; rec.continuous = true; rec.interimResults = true;
+    let fijo = '';
+    rec.onresult = (ev) => {
+      if (!s) return;
+      s.navegadorFunciona = true;
+      let provisional = '';
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        if (ev.results[i].isFinal) fijo += ev.results[i][0].transcript + ' ';
+        else provisional += ev.results[i][0].transcript;
+      }
+      s.textoNavegador = (fijo + provisional).replace(/\s+/g, ' ').trim();
+      if (!s.textoWhisper) pintar();
+    };
+    rec.onerror = (ev) => {
+      if (['network', 'service-not-allowed', 'language-not-supported'].includes(ev.error)) {
+        sinDictadoNavegador = true;
+        try { sessionStorage.setItem('sin_dictado_navegador', '1'); } catch (e) {}
+      }
+    };
+    rec.onend = () => { if (s && !s.terminando && !sinDictadoNavegador && s.reconocedor === rec) { try { rec.start(); } catch (e) {} } };
+    try { rec.start(); s.reconocedor = rec; } catch (e) { sinDictadoNavegador = true; }
+  }
+
+  // apaga microfono, temporizadores y dictado del navegador
+  function apagar(g) {
+    g.terminando = true;
+    clearInterval(g.reloj); clearTimeout(g.limite);
+    if (g.reconocedor) { try { g.reconocedor.stop(); } catch (e) {} }
+    g.flujo.getTracks().forEach((t) => t.stop());
+    try { g.procesador.disconnect(); } catch (e) {}
+    g.contexto.close().catch(() => {});
+  }
+
+  function quedarListo() {
+    caja.readOnly = false;
+    estadoMic('', '🎤', 'Dictar por voz');
+  }
+
+  async function terminar() {
+    const g = s;
+    if (!g || g.terminando) return;
+    apagar(g);
+    if (g.huboVoz) {
+      estadoMic('procesando', '⏳', 'Revisando todo lo que dijiste…');
+      const muestras = audioConVoz();
+      // version final con toda tu voz (si se llego al limite por minuto, se reintenta unos segundos despues)
+      for (let intento = 0; intento < 5 && !g.cancelado; intento++) {
+        try { const texto = await aWhisper(muestras); g.textoWhisper = texto || g.textoWhisper || g.textoNavegador; break; }
+        catch (e) { if (e.message === 'sesion') return; if (!e.limite) break; await new Promise((ok) => setTimeout(ok, 3000)); }
+      }
+      if (g.cancelado) return;   // el mensaje ya se envio mientras se revisaba: no se vuelve a escribir
+      pintar();
+    }
+    if (s === g) s = null;
+    quedarListo();
+    caja.focus(); caja.setSelectionRange(caja.value.length, caja.value.length);
+  }
+
+  // al enviar el mensaje (o abrir otro chat) mientras se dicta: se deja de grabar y no se escribe nada mas en la caja
+  accionCancelarDictado = () => {
+    const g = s;
+    if (!g) return;
+    g.cancelado = true;
+    if (!g.terminando) apagar(g);
+    s = null;
+    quedarListo();
+  };
+
+  // si cambias de pestana, minimizas o cierras, se deja de grabar y se guarda lo que dijiste
+  document.addEventListener('visibilitychange', () => { if (document.hidden && s) terminar(); });
+  window.addEventListener('pagehide', () => { if (s) terminar(); });
+
+  mic.addEventListener('click', async () => {
+    if (s) { terminar(); return; }
+    let flujo;
+    try { flujo = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } }); }
+    catch (e) {
+      alert(e.name === 'NotFoundError' ? 'No se encontró un micrófono conectado.'
+        : 'Para dictar por voz, permite el uso del micrófono: haz clic en el candado 🔒 junto a la dirección de la página y activa "Micrófono".');
+      return;
+    }
+    const contexto = new (window.AudioContext || window.webkitAudioContext)();
+    if (contexto.state === 'suspended') await contexto.resume();
+    const fuente = contexto.createMediaStreamSource(flujo);
+    const procesador = contexto.createScriptProcessor(4096, 1, 1);
+    const paso = contexto.sampleRate / HZ;
+    s = { flujo, contexto, procesador, bloques: [], tamBloque: Math.round(4096 / paso), previo: caja.value.trim(),
+          textoWhisper: '', textoNavegador: '', enviando: false, ultimoEnvio: Date.now() - CADA_MS + 1200, pausaHasta: 0,
+          terminando: false, navegadorFunciona: false, reconocedor: null, huboVoz: false, bloquesVoz: 0, vozEnviada: 0,
+          ruido: 1, inicio: Date.now() };
+    procesador.onaudioprocess = (ev) => {
+      if (!s || s.terminando) return;
+      const entrada = ev.inputBuffer.getChannelData(0);
+      // pasar a 16 kHz promediando muestras
+      const n = Math.floor(entrada.length / paso), datos = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let suma = 0, c = 0;
+        for (let j = Math.floor(i * paso); j < Math.floor((i + 1) * paso); j++) { suma += entrada[j]; c++; }
+        datos[i] = c ? suma / c : 0;
+      }
+      let energia = 0; for (const v of datos) energia += v * v;
+      const nivel = Math.sqrt(energia / (n || 1));
+      // el ruido de fondo se estima con el nivel mas bajo escuchado (sube despacio si el ambiente cambia)
+      s.ruido = Math.min(nivel, s.ruido * 1.02 + 0.0001);
+      const voz = nivel > Math.max(0.012, s.ruido * 3);
+      if (voz) { s.huboVoz = true; s.bloquesVoz++; }
+      s.bloques.push({ datos, voz });
+    };
+    fuente.connect(procesador); procesador.connect(contexto.destination);
+    iniciarDictadoNavegador();
+    s.reloj = setInterval(vistaPrevia, 300);
+    s.limite = setTimeout(terminar, 3 * 60000);   // como maximo 3 minutos seguidos
+    caja.readOnly = true;   // mientras se dicta; al terminar se puede corregir
+    estadoMic('escuchando', '⏹', 'Escuchando… haz clic cuando termines');
+  });
+}
+
+// ---------- valoracion de respuestas ----------
+function barraValorar(id, valoracion) {
+  const v = document.createElement('div');
+  v.className = 'valorar';
+  v.innerHTML = `<span>¿Te sirvió esta respuesta?</span><button type="button" data-v="1" title="Me sirvió" aria-label="Me sirvió"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v11H3V10z"/><path d="M7 10l4-8a3 3 0 0 1 3 3v4h6l-2 12H7"/></svg></button>
+    <button type="button" data-v="-1" title="No me sirvió" aria-label="No me sirvió"><svg class="ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 14V3h4v11z"/><path d="M17 14l-4 8a3 3 0 0 1-3-3v-4H4l2-12h11"/></svg></button><span class="gracias"></span>`;
+  const marcar = (val) => {
+    v.querySelectorAll('button[data-v]').forEach((b) => b.classList.toggle('marcado', Number(b.dataset.v) === val));
+    v.querySelector('.gracias').innerHTML = val > 0 ? '¡Gracias!'
+      : val < 0 ? 'Gracias por avisarnos. <button type="button" class="link">Hablar con soporte</button>' : '';
+    const link = v.querySelector('.link');
+    if (link) link.addEventListener('click', pedirSoporte);
+  };
+  if (valoracion) marcar(valoracion);
+  v.querySelectorAll('button[data-v]').forEach((b) => b.addEventListener('click', async () => {
+    const val = Number(b.dataset.v);
+    marcar(val);
+    try { await api('valorar', { mensaje_id: id, valor: val }); } catch (e) {}
+  }));
+  return v;
+}
+
+// ---------- solicitud de soporte ----------
+// ventana propia para pedir soporte: devuelve la respuesta de 'pedir_soporte' o null si el cliente cancela
+function pedirDetalleSoporte() {
+  const dlg = $('dlg-soporte'), txt = $('ds-detalle'), err = $('ds-error'), enviar = $('ds-enviar');
+  const c = estado.conversaciones.find((x) => x.id === estado.conversacion);
+  const capturas = document.querySelectorAll('#contenedor img.captura').length;
+  $('ds-envio').textContent = c
+    ? `Enviaremos un resumen de la conversación «${c.titulo}»${capturas ? ` y ${capturas === 1 ? 'la captura' : 'sus capturas'}` : ''}, para que no tengas que repetir nada.`
+    : 'Enviaremos tu mensaje con tus datos de contacto.';
+  txt.value = ''; err.textContent = ''; $('ds-cuenta').textContent = '0/2000';
+  const motivos = $('ds-motivos');
+  // motivos generales; si hay conversacion, la IA propone mensajes breves segun el chat (el cliente los puede editar)
+  const MOTIVOS = ['Me aparece un error', 'No encuentro cómo hacerlo', 'La respuesta no me sirvió', 'Problema con SUNAT'];
+  const pintarMotivos = (lista, sugeridas) => {
+    motivos.classList.toggle('sugeridas', sugeridas);
+    $('ds-etiqueta').textContent = sugeridas ? 'Sugerencias según tu conversación (toca una y edítala si quieres)' : 'Elige un motivo';
+    motivos.innerHTML = '';
+    lista.forEach((t) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+      b.setAttribute('aria-pressed', 'false'); b.dataset.sugerida = sugeridas ? '1' : ''; motivos.appendChild(b); });
+  };
+  pintarMotivos(MOTIVOS, false);
+  if (c) {
+    motivos.insertAdjacentHTML('afterbegin', '<span class="cargando">Preparando sugerencias según tu conversación…</span>');
+    fetch('/webhook/navasoft-sugerencias', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: estado.token, conversacion_id: estado.conversacion }) })
+      .then((x) => x.json()).then((r) => {
+        if (!dlg.open) return;
+        if (r.ok && r.sugerencias && r.sugerencias.length) pintarMotivos(r.sugerencias, true);
+        else motivos.querySelector('.cargando')?.remove();
+      }).catch(() => motivos.querySelector('.cargando')?.remove());
+  }
+  return new Promise((resolver) => {
+    let fin = null;
+    const cerrar = (v) => { fin = v; dlg.close(); };
+    dlg.onclose = () => resolver(fin);
+    $('ds-cerrar').onclick = $('ds-cancelar').onclick = () => cerrar(null);
+    dlg.onclick = (e) => { if (e.target === dlg) cerrar(null); };   // toque fuera de la ventana
+    txt.oninput = () => { $('ds-cuenta').textContent = `${txt.value.length}/2000`; err.textContent = ''; };
+    // una sugerencia se copia al cuadro de texto; un motivo general solo se marca
+    motivos.onclick = (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.sugerida) {
+        txt.value = b.textContent; txt.oninput();
+        motivos.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        txt.focus(); txt.setSelectionRange(txt.value.length, txt.value.length);
+        return;
+      }
+      const activo = b.getAttribute('aria-pressed') === 'true';
+      motivos.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', String(!activo));
+      txt.focus();
+    };
+    $('ds-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const motivo = dlg.querySelector('.d-motivos [aria-pressed="true"]:not([data-sugerida="1"])');
+      const detalle = [motivo ? motivo.textContent + '.' : '', txt.value.trim()].filter(Boolean).join(' ');
+      if (!txt.value.trim() && !motivo) { err.textContent = 'Elige un motivo o escribe qué necesitas.'; txt.focus(); return; }
+      enviar.disabled = true; enviar.textContent = 'Registrando…';
+      try {
+        const r = await api('pedir_soporte', { conversacion_id: estado.conversacion, detalle: detalle.slice(0, 2000) });
+        if (!r.ok) { err.textContent = r.error; return; }
+        cerrar(r);
+      } catch (ex) { err.textContent = ex.message; }
+      finally { enviar.disabled = false; enviar.textContent = 'Continuar'; }
+    };
+    dlg.showModal();
+    setTimeout(() => txt.focus(), 50);
+  });
+}
+
+async function pedirSoporte() {
+  try {
+    const r = await pedirDetalleSoporte();
+    if (!r) return;
+    verChat();
+    if (!estado.conversacion) $('contenedor').innerHTML = '';
+    // el resumen lleva un enlace privado al caso: la consultora ve la conversacion completa con las capturas
+    const texto = r.resumen + `\n\nVer la conversación completa con capturas:\n${location.origin}/webhook/navasoft-caso?id=${r.caso}`;
+    const url = `https://wa.me/${r.whatsapp}?text=${encodeURIComponent(texto)}`;
+    // WhatsApp no recibe imagenes desde un enlace: en el celular se usa el menu Compartir, que si las adjunta
+    const archivos = (r.capturas || []).map((c, i) => {
+      const b = atob(c.split(',')[1]); const a = new Uint8Array(b.length);
+      for (let j = 0; j < b.length; j++) a[j] = b.charCodeAt(j);
+      return new File([a], `captura-${r.ticket}-${i + 1}.jpg`, { type: 'image/jpeg' });
+    });
+    const compartible = archivos.length && navigator.canShare && navigator.canShare({ files: archivos, text: texto });
+    const aviso = document.createElement('div'); aviso.className = 'aviso-soporte';
+    aviso.innerHTML = `<div class="as-cab"><span class="as-ok">✓</span><div><b>Solicitud N.º ${r.ticket} registrada</b>`
+      + `<small>${compartible ? 'Pulsa <b>Compartir con capturas</b>, elige WhatsApp y el chat de EKAM PERÚ, y envía.'
+        : 'Para enviarla al equipo de EKAM PERÚ, abre WhatsApp y pulsa enviar.'}</small></div></div><div class="as-botones"></div>`;
+    const boton = (txt, fn, secundario) => { const b = document.createElement('a');
+      b.className = 'btn ' + (secundario ? 'btn-suave' : 'btn-dorado'); b.textContent = txt;
+      b.href = url; b.target = '_blank'; b.rel = 'noopener';
+      if (fn) b.addEventListener('click', fn); aviso.querySelector('.as-botones').appendChild(b); };
+    if (compartible) {
+      boton('Compartir con capturas', async (e) => {
+        e.preventDefault();
+        try { await navigator.share({ files: archivos, text: texto }); }
+        catch (err) { if (err.name !== 'AbortError') window.open(url, '_blank', 'noopener'); }
+      });
+      boton('Solo texto', null, true);
+    } else {
+      boton('Enviar por WhatsApp');
+    }
+    $('contenedor').appendChild(aviso);
+    bajar();
+    // sin capturas se abre WhatsApp de inmediato; con capturas espera el toque del cliente (el menu Compartir lo exige)
+    if (!compartible) window.open(url, '_blank', 'noopener');
+  } catch (err) { alert(err.message); }
+}
+$('b-soporte').addEventListener('click', pedirSoporte);
+const bajar = () => { const m = $('mensajes'); m.scrollTop = m.scrollHeight; };
+
+async function enviar() {
+  cancelarDictado();   // si se estaba dictando, se envia lo que se ve en la caja y se deja de grabar
+  const captura = estado.captura;
+  let texto = $('texto').value.trim();
+  if ((!texto && !captura) || estado.enviando) return;
+  if (captura && !texto) texto = 'Tengo este problema en NAVASOFT, ¿cómo lo soluciono?';
+  estado.enviando = true; $('b-enviar').disabled = true;
+  if (!estado.conversacion) $('contenedor').innerHTML = '';
+  quitarSugerencias();
+  agregarMensaje('usuario', texto, { captura });
+  $('texto').value = ''; ajustarAltura(); quitarCaptura();
+  const espera = document.createElement('div');
+  espera.className = 'msg bot';
+  espera.innerHTML = AVATAR_BOT + '<div class="globo escribiendo"><span class="puntos"><span></span><span></span><span></span></span> Buscando en los manuales…</div>';
+  $('contenedor').appendChild(espera); bajar();
+  try {
+    let pregunta = texto;
+    if (captura) {
+      espera.querySelector('.globo').lastChild.textContent = ' Leyendo tu captura…';
+      const c = await fetch(CAPTURA, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                       body: JSON.stringify({ token: estado.token, imagen: captura }) }).then((x) => x.json());
+      if (c.sesion === false) { cerrarSesion(c.error); return; }
+      if (!c.ok) { espera.remove(); agregarMensaje('bot', '⚠️ ' + (c.error || 'No se pudo leer la captura.')); return; }
+      if (/^no es una pantalla/i.test(c.descripcion)) {
+        espera.remove();
+        agregarMensaje('bot', 'La imagen que enviaste **no parece una pantalla de NAVASOFT**, así que no puedo usarla para buscar en los manuales. '
+          + 'Envía una captura de la ventana del sistema donde ves el problema (en Windows: **Win + Shift + S** y luego **Ctrl + V** aquí), '
+          + 'o escribe el mensaje de error que te aparece.');
+        return;
+      }
+      pregunta = texto.slice(0, 1350) + MARCA_CAPTURA + c.descripcion;
+      espera.querySelector('.globo').lastChild.textContent = ' Buscando en los manuales…';
+    }
+    const r = await api('nueva_pregunta', { conversacion_id: estado.conversacion, texto: pregunta, captura });
+    espera.remove();
+    if (!r.ok) { agregarMensaje('bot', '⚠️ ' + r.error); return; }
+    agregarMensaje('bot', r.respuesta, { id: r.mensaje_id, conSugerencias: true });
+    const nueva = !estado.conversacion;
+    estado.conversacion = r.conversacion_id;
+    await cargarConversaciones();
+    if (nueva) { const c = estado.conversaciones.find((x) => x.id === r.conversacion_id); if (c) $('titulo').textContent = c.titulo; }
+    refrescarTitulo(r.conversacion_id);
+  } catch (err) {
+    espera.remove(); agregarMensaje('bot', '⚠️ ' + err.message);
+  } finally {
+    estado.enviando = false; $('b-enviar').disabled = false; bajar(); $('texto').focus();
+  }
+}
+$('form-msg').addEventListener('submit', (e) => { e.preventDefault(); enviar(); });
+
+// ---------- captura de pantalla del cliente ----------
+// la imagen se achica en el navegador (maximo 1600 px, JPEG); Gemini la lee y se guarda 30 dias con la pregunta
+const CAPTURA = '/webhook/navasoft-captura';
+const MARCA_CAPTURA = '\n\n[Captura adjunta] ';
+function partirCaptura(texto) {
+  const i = texto.indexOf('[Captura adjunta]');
+  return i < 0 ? [texto, false] : [texto.slice(0, i).trim(), true];
+}
+async function prepararCaptura(archivo) {
+  if (!archivo || !/^image\//.test(archivo.type)) return;
+  const url = URL.createObjectURL(archivo);
+  try {
+    const img = await new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = url; });
+    const escala = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const lienzo = document.createElement('canvas');
+    lienzo.width = Math.round(img.naturalWidth * escala); lienzo.height = Math.round(img.naturalHeight * escala);
+    const ctx = lienzo.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+    ctx.drawImage(img, 0, 0, lienzo.width, lienzo.height);
+    estado.captura = lienzo.toDataURL('image/jpeg', 0.85);
+    $('adjunto-img').src = estado.captura; $('adjunto').classList.remove('oculto'); $('texto').focus();
+  } catch (e) {
+    alert('No se pudo abrir esa imagen. Prueba con otra captura (PNG o JPG).');
+  } finally { URL.revokeObjectURL(url); }
+}
+function quitarCaptura() { estado.captura = null; $('adjunto').classList.add('oculto'); $('adjunto-img').removeAttribute('src'); $('archivo-captura').value = ''; }
+$('b-captura').addEventListener('click', () => $('archivo-captura').click());
+$('archivo-captura').addEventListener('change', (e) => prepararCaptura(e.target.files[0]));
+$('b-quitar-captura').addEventListener('click', quitarCaptura);
+$('texto').addEventListener('paste', (e) => {
+  const item = [...(e.clipboardData || {}).items || []].find((x) => x.type.startsWith('image/'));
+  if (item) { e.preventDefault(); prepararCaptura(item.getAsFile()); }
+});
+$('texto').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } });
+function ajustarAltura() {
+  const t = $('texto'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 160) + 'px';
+  t.style.overflowY = t.scrollHeight > 160 ? 'auto' : 'hidden';   // barra de desplazamiento solo si el texto es largo
+}
+// en celulares el texto de ayuda va corto para que quepa en una linea
+if (window.matchMedia('(max-width: 600px)').matches) $('texto').placeholder = 'Escribe tu consulta…';
+ajustarAltura();
+$('texto').addEventListener('input', ajustarAltura);
+
+function ampliar(src) { $('visor').querySelector('img').src = src; $('visor').classList.remove('oculto'); }
+$('visor').addEventListener('click', () => $('visor').classList.add('oculto'));
+
+// ---------- administracion ----------
+const fechaCorta = (iso) => iso ? new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+
+function mostrarPanel(id) {
+  document.querySelectorAll('.panel-admin').forEach((p) => p.classList.toggle('oculto', p.id !== id));
+  document.querySelectorAll('.pestanas button').forEach((b) => b.classList.toggle('activa', b.dataset.panel === id));
+}
+document.querySelectorAll('.pestanas button').forEach((b) => b.addEventListener('click', async () => {
+  mostrarPanel(b.dataset.panel);
+  if (b.dataset.panel === 'panel-usuarios') { $('a-error').textContent = ''; $('a-aviso').innerHTML = ''; await cargarUsuarios(); }
+  if (b.dataset.panel === 'panel-tickets') await cargarTickets();
+  if (b.dataset.panel === 'panel-calidad') await cargarCalidad();
+  if (b.dataset.panel === 'panel-manuales') await cargarManuales();
+}));
+
+$('b-admin').addEventListener('click', async () => {
+  cerrarMenuMovil(); estado.conversacion = null; pintarLista();
+  $('zona-chat').classList.add('oculto'); $('zona-admin').classList.remove('oculto');
+  $('b-soporte').classList.add('oculto');
+  $('titulo').textContent = 'Administración';
+  mostrarPanel('panel-tickets');
+  await cargarTickets();
+});
+
+async function cargarTickets() {
+  const r = await api('admin_tickets');
+  const lista = r.tickets || [];
+  const abiertos = lista.filter((t) => t.estado === 'abierto').length;
+  $('cuenta-tickets').textContent = abiertos;
+  $('cuenta-tickets').classList.toggle('oculto', !abiertos);
+  $('t-tabla').innerHTML = lista.length ? lista.map((t) => `<tr>
+      <td>${fechaCorta(t.fecha)}</td>
+      <td><b>${escapar(t.nombre)}</b><br><small>${escapar(t.empresa || t.usuario)}</small></td>
+      <td class="celda-texto">${escapar(t.detalle)}${t.titulo ? `<br><small>Chat: ${escapar(t.titulo)}</small>` : ''}</td>
+      <td>${t.estado === 'abierto' ? '<span class="etiqueta no">Abierto</span>' : '<span class="etiqueta si">Atendido</span>'}</td>
+      <td style="white-space:nowrap">
+        ${t.conversacion_id ? `<button class="btn btn-suave" data-ver="${t.conversacion_id}">Ver chat</button>` : ''}
+        <button class="btn btn-suave" data-ticket="${t.id}" data-estado="${t.estado === 'abierto' ? 'atendido' : 'abierto'}">${t.estado === 'abierto' ? 'Marcar atendido' : 'Reabrir'}</button>
+      </td></tr>`).join('') : '<tr><td colspan="5" style="color:var(--suave)">No hay solicitudes de soporte.</td></tr>';
+  $('t-tabla').querySelectorAll('[data-ver]').forEach((b) => b.addEventListener('click', () => verConversacionAdmin(b.dataset.ver, 'panel-tickets')));
+  $('t-tabla').querySelectorAll('[data-ticket]').forEach((b) => b.addEventListener('click', async () => {
+    await api('admin_ticket_estado', { ticket_id: Number(b.dataset.ticket), estado: b.dataset.estado });
+    await cargarTickets();
+  }));
+}
+
+async function cargarCalidad() {
+  const r = await api('admin_calidad');
+  const s = r.resumen || {};
+  const pct = (n) => (s.respuestas ? Math.round((n / s.respuestas) * 100) : 0);
+  $('c-resumen').innerHTML = `
+    <div><b>${s.respuestas || 0}</b><small>respuestas del asistente</small></div>
+    <div><b>${s.utiles || 0}</b><small>le sirvieron al cliente</small></div>
+    <div><b>${s.no_utiles || 0}</b><small>no le sirvieron</small></div>
+    <div><b>${s.sin_informacion || 0}</b><small>sin información en los manuales (${pct(s.sin_informacion || 0)} %)</small></div>`;
+  const lista = r.pendientes || [];
+  $('c-tabla').innerHTML = lista.length ? lista.map((p) => `<tr>
+      <td>${fechaCorta(p.fecha)}</td>
+      <td>${escapar(p.usuario)}<br><small>${escapar(p.empresa || '')}</small></td>
+      <td class="celda-texto">${escapar(p.pregunta || '—')}</td>
+      <td>${p.tipo === 'No le sirvió' ? '<span class="etiqueta no">No le sirvió</span>' : '<span class="etiqueta pend">Sin información</span>'}</td>
+      <td><button class="btn btn-suave" data-ver="${p.conversacion_id}">Ver chat</button></td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:var(--suave)">No hay preguntas pendientes.</td></tr>';
+  $('c-tabla').querySelectorAll('[data-ver]').forEach((b) => b.addEventListener('click', () => verConversacionAdmin(b.dataset.ver, 'panel-calidad')));
+}
+
+async function verConversacionAdmin(id, volverA) {
+  mostrarPanel('panel-conversacion');
+  document.querySelectorAll('.pestanas button').forEach((b) => b.classList.toggle('activa', b.dataset.panel === volverA));
+  $('v-mensajes').innerHTML = '<div class="escribiendo">Cargando conversación…</div>';
+  const r = await api('admin_conversacion', { conversacion_id: id });
+  $('v-titulo').textContent = r.titulo || 'Conversación';
+  $('v-mensajes').innerHTML = '';
+  (r.mensajes || []).forEach((m) => agregarMensaje(m.rol, m.texto, { valoracion: m.valoracion, contenedor: $('v-mensajes'), soloLectura: true, captura: m.captura }));
+  $('v-volver').onclick = () => { mostrarPanel(volverA); };
+}
+
+function claveAleatoria() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  const a = new Uint32Array(10); crypto.getRandomValues(a);
+  return Array.from(a, (n) => c[n % c.length]).join('');
+}
+$('a-generar').addEventListener('click', () => { $('a-clave').value = claveAleatoria(); });
+
+async function cargarUsuarios() {
+  const r = await api('admin_usuarios');
+  const fecha = (iso) => iso ? new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+  $('a-tabla').innerHTML = (r.usuarios || []).map((u) => `<tr>
+      <td><b>${escapar(u.usuario)}</b></td><td>${escapar(u.nombre)}</td><td>${escapar(u.empresa || '—')}</td>
+      <td>${u.rol === 'admin' ? '<span class="etiqueta admin">Admin</span>' : 'Cliente'}</td>
+      <td>${u.activo ? '<span class="etiqueta si">Activo</span>' : '<span class="etiqueta no">Inactivo</span>'}
+          ${u.debe_cambiar ? '<span class="etiqueta pend" title="Aún no cambia su contraseña inicial">Clave inicial</span>' : ''}</td>
+      <td>${fecha(u.ultimo_acceso)}</td><td>${u.conversaciones}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-suave" data-accion="clave" data-id="${u.id}" data-usuario="${escapar(u.usuario)}">Nueva clave</button>
+        <button class="btn btn-suave" data-accion="activar" data-id="${u.id}" data-activo="${!u.activo}">${u.activo ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-suave btn-eliminar" data-accion="eliminar" data-id="${u.id}" data-usuario="${escapar(u.usuario)}" data-chats="${u.conversaciones}">Eliminar</button>
+      </td></tr>`).join('');
+  $('a-tabla').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => accionUsuario(b.dataset)));
+}
+
+async function accionUsuario(d) {
+  $('a-error').textContent = ''; $('a-aviso').innerHTML = '';
+  if (d.accion === 'clave') {
+    if (!confirm(`¿Asignar una contraseña nueva a "${d.usuario}"? Deberá cambiarla al ingresar.`)) return;
+    const clave = claveAleatoria();
+    const r = await api('admin_restablecer', { usuario_id: Number(d.id), clave });
+    if (!r.ok) { $('a-error').textContent = r.error; return; }
+    avisoClave(d.usuario, clave);
+  } else if (d.accion === 'eliminar') {
+    // no se puede deshacer: se pide escribir el usuario para evitar borrar la cuenta equivocada
+    const escrito = prompt(`Vas a ELIMINAR la cuenta "${d.usuario}" junto con sus ${d.chats} conversaciones, capturas y solicitudes de soporte. `
+      + 'No se puede deshacer. Si solo quieres quitarle el acceso, usa Desactivar.\n\nPara confirmar, escribe el usuario:');
+    if (escrito === null) return;
+    if (escrito.trim() !== d.usuario) { $('a-error').textContent = 'El usuario escrito no coincide: no se eliminó nada.'; return; }
+    const r = await api('admin_eliminar', { usuario_id: Number(d.id) });
+    if (!r.ok) { $('a-error').textContent = r.error; return; }
+    $('a-aviso').innerHTML = `<div class="aviso">Cuenta "${escapar(d.usuario)}" eliminada.</div>`;
+  } else {
+    const r = await api('admin_activar', { usuario_id: Number(d.id), activo: d.activo === 'true' });
+    if (!r.ok) { $('a-error').textContent = r.error; return; }
+  }
+  await cargarUsuarios();
+}
+
+function avisoClave(usuario, clave) {
+  $('a-aviso').innerHTML = `<div class="aviso">Entrega estos datos al cliente por un medio seguro (no quedan guardados en ningún lugar visible):<br><br>
+    Usuario: <code>${escapar(usuario)}</code> &nbsp; Contraseña inicial: <code>${escapar(clave)}</code><br><br>
+    Al ingresar por primera vez, el sistema le pedirá crear su propia contraseña.</div>`;
+}
+
+$('form-crear').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('a-error').textContent = ''; $('a-aviso').innerHTML = '';
+  const datos = { usuario: $('a-usuario').value, nombre: $('a-nombre').value, empresa: $('a-empresa').value,
+                  rol: $('a-rol').value, clave: $('a-clave').value };
+  $('a-boton').disabled = true;
+  try {
+    const r = await api('admin_crear', datos);
+    if (!r.ok) { $('a-error').textContent = r.error; return; }
+    avisoClave(datos.usuario.trim().toLowerCase(), datos.clave);
+    $('form-crear').reset();
+    await cargarUsuarios();
+  } catch (err) { $('a-error').textContent = err.message; }
+  finally { $('a-boton').disabled = false; }
+});
+
+// ---------- manuales: subir, revisar y publicar (los procesa navasoft-procesador en el servidor) ----------
+const PROCESADOR = '/navasoft-procesador';
+const ESTADOS_MANUAL = {
+  en_cola: ['En cola', 'proceso'], limpiando: ['Limpiando datos', 'proceso'], revisar: ['Listo para revisar', 'admin'],
+  publicar: ['En cola para publicar', 'proceso'], publicando: ['Publicando', 'proceso'], publicado: ['Publicado', 'si'],
+  error: ['Error', 'no'],
+};
+let relojManuales = null;
+
+async function procesador(ruta, opciones = {}) {
+  const r = await fetch(PROCESADOR + ruta, { ...opciones, headers: { ...(opciones.headers || {}), Authorization: 'Bearer ' + estado.token } });
+  if (r.status === 403) throw new Error('Tu sesión de administrador venció. Vuelve a ingresar.');
+  return r;
+}
+
+async function cargarManuales() {
+  clearTimeout(relojManuales);
+  let lista = [];
+  try {
+    const r = await (await procesador('/lista')).json();
+    if (!r.ok) throw new Error(r.error);
+    lista = r.manuales || [];
+  } catch (err) {
+    $('m-tabla').innerHTML = `<tr><td colspan="5" class="error-manual">${escapar(err.message)}</td></tr>`;
+    return;
+  }
+  $('m-tabla').innerHTML = lista.length ? lista.map((m) => {
+    const [texto, clase] = ESTADOS_MANUAL[m.estado] || [m.estado, 'pend'];
+    const detalle = m.estado === 'error' ? `<span class="detalle error-manual">${escapar(m.error || '')}</span>`
+      : m.avance ? `<span class="detalle">${escapar(m.avance)}</span>` : '';
+    const paginas = m.paginas ? `${m.paginas}<span class="detalle">${m.paginas_con_cambios} con datos reemplazados</span>` : '—';
+    const listo = m.estado === 'revisar' || (m.estado === 'error' && m.paginas);
+    return `<tr><td><b>${escapar(m.titulo)}</b><span class="detalle">${escapar(m.original)}</span></td>
+      <td>${fechaCorta(m.creado)}<span class="detalle">${escapar(m.subido_por || '')}</span></td>
+      <td><span class="etiqueta ${clase}">${texto}</span>${detalle}</td><td>${paginas}</td>
+      <td>${listo || m.estado === 'publicado' ? `<button class="btn btn-suave" data-copia="${m.id}" data-titulo="${escapar(m.titulo)}">Descargar copia</button>` : ''}
+          ${listo ? `<button class="btn btn-dorado" data-publicar="${m.id}">Publicar</button>` : ''}
+          ${['en_cola', 'revisar', 'error'].includes(m.estado) ? `<button class="btn btn-suave btn-eliminar" data-descartar="${m.id}">Descartar</button>` : ''}</td></tr>`;
+  }).join('') : '<tr><td colspan="5" style="color:var(--suave)">Todavía no se subió ningún manual desde el portal.</td></tr>';
+  $('m-tabla').querySelectorAll('[data-copia]').forEach((b) => b.addEventListener('click', () => descargarCopia(b)));
+  $('m-tabla').querySelectorAll('[data-publicar]').forEach((b) => b.addEventListener('click', () => accionManual(b, 'publicar',
+    '¿Publicar este manual? El asistente empezará a usarlo para responder a los clientes. Revisa antes la copia descargada.')));
+  $('m-tabla').querySelectorAll('[data-descartar]').forEach((b) => b.addEventListener('click', () => accionManual(b, 'descartar',
+    '¿Descartar este manual? Se borra del servidor y no se publica.')));
+  // mientras haya manuales en proceso, la lista se actualiza sola
+  if (lista.some((m) => ESTADOS_MANUAL[m.estado]?.[1] === 'proceso') && !$('panel-manuales').classList.contains('oculto')) {
+    relojManuales = setTimeout(cargarManuales, 10000);
+  }
+}
+
+async function accionManual(b, accion, pregunta) {
+  if (!confirm(pregunta)) return;
+  b.disabled = true;
+  try {
+    const r = await (await procesador(`/${accion}?id=${b.dataset.publicar || b.dataset.descartar}`, { method: 'POST' })).json();
+    if (!r.ok) alert(r.error);
+  } catch (err) { alert(err.message); }
+  await cargarManuales();
+}
+
+async function descargarCopia(b) {
+  b.disabled = true; const texto = b.textContent; b.textContent = 'Descargando…';
+  try {
+    const r = await procesador(`/copia?id=${b.dataset.copia}`);
+    if (!r.ok) throw new Error((await r.json()).error);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(await r.blob());
+    a.download = `${b.dataset.titulo} (copia sin datos reales).pdf`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  } catch (err) { alert(err.message); }
+  finally { b.disabled = false; b.textContent = texto; }
+}
+
+// el titulo se propone con el nombre del archivo (sin extension ni guiones bajos)
+$('m-archivo').addEventListener('change', () => {
+  const f = $('m-archivo').files[0];
+  if (f && !$('m-titulo').value.trim()) $('m-titulo').value = f.name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim();
+});
+
+$('form-manual').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const f = $('m-archivo').files[0], titulo = $('m-titulo').value.trim();
+  $('m-error').textContent = '';
+  if (!f) return;
+  if (f.size > 80 * 1024 * 1024) { $('m-error').textContent = 'El archivo pesa más de 80 MB.'; return; }
+  // XMLHttpRequest y no fetch: muestra cuanto se ha subido
+  const x = new XMLHttpRequest();
+  x.open('POST', PROCESADOR + '/subir');
+  x.setRequestHeader('Authorization', 'Bearer ' + estado.token);
+  x.setRequestHeader('X-Nombre-Archivo', encodeURIComponent(f.name));
+  x.setRequestHeader('X-Titulo', encodeURIComponent(titulo));
+  x.upload.onprogress = (ev) => { if (ev.lengthComputable) $('m-boton').textContent = `Subiendo ${Math.round((ev.loaded / ev.total) * 100)} %…`; };
+  const fin = () => { $('m-boton').disabled = false; $('m-boton').textContent = 'Subir manual'; };
+  x.onload = () => {
+    fin();
+    let r = {};
+    try { r = JSON.parse(x.responseText); } catch (err) { r = { error: 'El servidor no respondió como se esperaba (' + x.status + ').' }; }
+    if (!r.ok) { $('m-error').textContent = r.error || 'No se pudo subir el manual.'; return; }
+    $('form-manual').reset();
+    cargarManuales();
+  };
+  x.onerror = () => { fin(); $('m-error').textContent = 'No se pudo subir el archivo. Revisa tu conexión e inténtalo de nuevo.'; };
+  $('m-boton').disabled = true;
+  x.send(f);
+});
+
+// ---------- crear varias cuentas de una vez ----------
+// Cada linea de la lista: nombre, empresa, celular, correo (separados por coma, punto y coma o tabulacion, como al
+// copiar de Excel). El celular y el correo son opcionales y se reconocen por su forma, en cualquier orden.
+// Se genera el usuario (inicial del nombre + primer apellido) y una contrasena inicial; luego se muestran con
+// botones para enviarlos por WhatsApp o por correo, con el mensaje ya escrito.
+const sinTildes = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const ES_CORREO = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
+const ES_CELULAR = /^\+?[\d\s-]{9,16}$/;
+let lote = [];          // cuentas creadas en esta pantalla (con su contrasena, que no se guarda en ningun otro lado)
+
+function leerLista(texto) {
+  return texto.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((linea, i) => {
+    const partes = linea.split(/\t|;|,/).map((p) => p.trim()).filter(Boolean);
+    const correo = partes.find((p) => ES_CORREO.test(p)) || '';
+    const celular = partes.find((p) => p !== correo && ES_CELULAR.test(p)) || '';
+    const resto = partes.filter((p) => p !== correo && p !== celular);
+    return { linea: i + 1, nombre: resto[0] || '', empresa: resto.slice(1).join(', '), celular: celular.replace(/\D/g, ''), correo };
+  });
+}
+
+function proponerUsuario(nombre, usados) {
+  const palabras = sinTildes(nombre).toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const base = ((palabras.length > 1 ? palabras[0][0] + palabras[1] : palabras[0]) || 'usuario').slice(0, 20);
+  let usuario = base;
+  for (let n = 2; usados.has(usuario); n++) usuario = base + n;
+  usados.add(usuario);
+  return usuario;
+}
+
+// celular de Peru de 9 digitos (empieza con 9): se le agrega el 51; un numero que ya trae el codigo queda igual
+const numeroWhatsApp = (c) => (!c ? '' : c.length === 9 && c[0] === '9' ? '51' + c : c);
+const enlacePortal = () => location.origin + location.pathname;
+function mensajeAcceso(c) {
+  return `Hola ${c.nombre.split(' ')[0]}, te damos acceso al Asistente NAVASOFT de EKAM PERÚ.\n\n`
+    + `Ingresa aquí: ${enlacePortal()}\nUsuario: ${c.usuario}\nContraseña inicial: ${c.clave}\n\n`
+    + 'Al entrar por primera vez, el sistema te pedirá crear tu propia contraseña.';
+}
+
+function resumirLista() {
+  const ps = leerLista($('lt-lista').value);
+  const sinContacto = ps.filter((p) => !p.celular && !p.correo).length;
+  $('lt-resumen').textContent = !ps.length ? ''
+    : `${ps.length} ${ps.length === 1 ? 'persona' : 'personas'}`
+      + (sinContacto ? ` · ${sinContacto} sin celular ni correo (se podrán copiar sus datos)` : '');
+}
+$('lt-lista').addEventListener('input', resumirLista);
+
+function pintarLote() {
+  $('lt-resultado').classList.remove('oculto');
+  $('lt-tabla').innerHTML = lote.map((c, i) => {
+    if (c.error) {
+      return `<tr class="fallo"><td>${escapar(c.nombre)}</td><td>${escapar(c.empresa || '—')}</td><td colspan="3">No se creó: ${escapar(c.error)}</td></tr>`;
+    }
+    const msg = encodeURIComponent(mensajeAcceso(c));
+    const wa = numeroWhatsApp(c.celular);
+    return `<tr><td>${escapar(c.nombre)}</td><td>${escapar(c.empresa || '—')}</td><td><code>${escapar(c.usuario)}</code></td><td><code>${escapar(c.clave)}</code></td>
+      <td><a class="btn btn-suave" data-i="${i}" target="_blank" rel="noopener" ${wa ? `href="https://wa.me/${wa}?text=${msg}"` : 'aria-disabled="true" title="Sin celular"'}>WhatsApp</a>
+          <a class="btn btn-suave" data-i="${i}" ${c.correo ? `href="mailto:${encodeURIComponent(c.correo)}?subject=${encodeURIComponent('Tu acceso al Asistente NAVASOFT')}&body=${msg}"` : 'aria-disabled="true" title="Sin correo"'}>Correo</a>
+          <button type="button" class="btn btn-suave" data-copiar="${i}">Copiar</button>${c.enviado ? '<span class="enviado">Enviado</span>' : ''}</td></tr>`;
+  }).join('');
+  $('lt-tabla').querySelectorAll('a[data-i]').forEach((a) => a.addEventListener('click', () => {
+    lote[a.dataset.i].enviado = true;
+    setTimeout(pintarLote, 300);
+  }));
+  $('lt-tabla').querySelectorAll('[data-copiar]').forEach((b) => b.addEventListener('click', async () => {
+    const c = lote[b.dataset.copiar];
+    try { await navigator.clipboard.writeText(mensajeAcceso(c)); b.textContent = 'Copiado'; }
+    catch (e) { prompt('Copia el mensaje:', mensajeAcceso(c)); }
+  }));
+}
+
+$('form-lote').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('lt-error').textContent = '';
+  const personas = leerLista($('lt-lista').value);
+  if (!personas.length) { $('lt-error').textContent = 'Pega al menos una persona en la lista.'; return; }
+  const sinNombre = personas.find((p) => !p.nombre);
+  if (sinNombre) { $('lt-error').textContent = `La línea ${sinNombre.linea} no tiene nombre.`; return; }
+  if (personas.length > 100) { $('lt-error').textContent = 'Crea como máximo 100 cuentas a la vez.'; return; }
+  if (!confirm(`¿Crear ${personas.length} ${personas.length === 1 ? 'cuenta' : 'cuentas'} de cliente?`)) return;
+  $('lt-boton').disabled = true;
+  try {
+    const r = await api('admin_usuarios');
+    const usados = new Set((r.usuarios || []).map((u) => u.usuario.toLowerCase()));
+    for (const [i, p] of personas.entries()) {
+      $('lt-boton').textContent = `Creando ${i + 1} de ${personas.length}…`;
+      const c = { ...p, usuario: proponerUsuario(p.nombre, usados), clave: claveAleatoria() };
+      try {
+        const res = await api('admin_crear', { usuario: c.usuario, nombre: c.nombre, empresa: c.empresa, rol: 'cliente', clave: c.clave });
+        c.error = res.ok ? '' : (res.error || 'No se pudo crear.');
+      } catch (err) { c.error = err.message; }
+      lote.push(c);
+    }
+    $('lt-lista').value = ''; resumirLista();
+    pintarLote();
+    await cargarUsuarios();
+  } catch (err) { $('lt-error').textContent = err.message; }
+  finally { $('lt-boton').disabled = false; $('lt-boton').textContent = 'Crear cuentas'; }
+});
+
+// Excel (CSV con separador ; y tildes, como lo abre Excel en espanol)
+$('lt-excel').addEventListener('click', () => {
+  const celda = (t) => `"${String(t ?? '').replace(/"/g, '""')}"`;
+  const filas = [['Nombre', 'Empresa', 'Usuario', 'Contraseña inicial', 'Celular', 'Correo', 'Enlace', 'Estado']]
+    .concat(lote.map((c) => [c.nombre, c.empresa, c.error ? '' : c.usuario, c.error ? '' : c.clave, c.celular, c.correo,
+                             enlacePortal(), c.error ? 'No se creó: ' + c.error : 'Creada']));
+  const csv = '﻿' + filas.map((f) => f.map(celda).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `accesos_navasoft_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+// ---- subir la lista en un Excel o CSV ----
+// Se busca la fila de titulos (Nombre, Empresa, Celular/Telefono/WhatsApp, Correo/Email) y cada fila de datos pasa al
+// cuadro de la lista, para revisarla antes de crear las cuentas. Sin titulos, se toman las columnas en ese orden.
+// La libreria de Excel (SheetJS) se carga solo al subir un .xlsx o .xls.
+const URL_XLSX = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+const SRI_XLSX = 'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw';
+let cargaXlsx = null;
+function cargarXlsx() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  cargaXlsx = cargaXlsx || new Promise((ok, mal) => {
+    const s = document.createElement('script');
+    s.src = URL_XLSX; s.integrity = SRI_XLSX; s.crossOrigin = 'anonymous';
+    s.onload = () => ok(window.XLSX);
+    s.onerror = () => { cargaXlsx = null; mal(new Error('No se pudo abrir el Excel. Guárdalo como CSV e inténtalo de nuevo.')); };
+    document.head.appendChild(s);
+  });
+  return cargaXlsx;
+}
+
+// filas de un CSV (separado por ; , o tabulacion; respeta comillas)
+function filasCsv(texto) {
+  const primera = texto.split(/\r?\n/)[0] || '';
+  const sep = ['\t', ';', ','].sort((a, b) => primera.split(b).length - primera.split(a).length)[0];
+  const filas = []; let fila = [], celda = '', comillas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const ch = texto[i];
+    if (comillas) {
+      if (ch === '"' && texto[i + 1] === '"') { celda += '"'; i++; }
+      else if (ch === '"') comillas = false;
+      else celda += ch;
+    } else if (ch === '"') comillas = true;
+    else if (ch === sep) { fila.push(celda); celda = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && texto[i + 1] === '\n') i++;
+      fila.push(celda); filas.push(fila); fila = []; celda = '';
+    } else celda += ch;
+  }
+  if (celda || fila.length) { fila.push(celda); filas.push(fila); }
+  return filas;
+}
+
+function filasALista(filas) {
+  filas = filas.map((f) => f.map((c) => String(c ?? '').trim())).filter((f) => f.some(Boolean));
+  if (!filas.length) return { lista: '', n: 0 };
+  const titulo = (t) => sinTildes(t).toLowerCase();
+  const cols = { nombre: -1, empresa: -1, celular: -1, correo: -1 };
+  const iTitulos = filas.slice(0, 5).findIndex((f) => f.some((c) => /^(nombres?|nombre y apellidos?|apellidos? y nombres?)$/.test(titulo(c))));
+  if (iTitulos >= 0) {
+    filas[iTitulos].forEach((c, i) => {
+      const t = titulo(c);
+      if (cols.nombre < 0 && /nombre/.test(t)) cols.nombre = i;
+      else if (cols.empresa < 0 && /(empresa|razon social|cliente)/.test(t)) cols.empresa = i;
+      else if (cols.celular < 0 && /(celular|telefono|whatsapp|movil|numero)/.test(t)) cols.celular = i;
+      else if (cols.correo < 0 && /(correo|e-?mail|mail)/.test(t)) cols.correo = i;
+    });
+    filas = filas.slice(iTitulos + 1);
+  } else {
+    Object.assign(cols, { nombre: 0, empresa: 1, celular: 2, correo: 3 });
+  }
+  const dato = (f, i) => (i >= 0 && f[i] ? f[i].replace(/[\t\n]/g, ' ') : '');
+  const lineas = filas.map((f) => [dato(f, cols.nombre), dato(f, cols.empresa), dato(f, cols.celular).replace(/\.0$/, ''), dato(f, cols.correo)])
+    .filter((f) => f[0]).map((f) => f.join('\t').replace(/\t+$/, ''));
+  return { lista: lineas.join('\n'), n: lineas.length };
+}
+
+$('lt-subir').addEventListener('click', () => $('lt-archivo').click());
+$('lt-archivo').addEventListener('change', async (e) => {
+  const archivo = e.target.files[0];
+  e.target.value = '';
+  if (!archivo) return;
+  $('lt-error').textContent = ''; $('lt-archivo-nombre').textContent = 'Leyendo ' + archivo.name + '…';
+  try {
+    let filas;
+    if (/\.(xlsx|xls)$/i.test(archivo.name)) {
+      const XLSX = await cargarXlsx();
+      const libro = XLSX.read(await archivo.arrayBuffer(), { type: 'array' });
+      filas = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, raw: false, defval: '' });
+    } else {
+      filas = filasCsv((await archivo.text()).replace(/^﻿/, ''));
+    }
+    const { lista, n } = filasALista(filas);
+    if (!n) throw new Error('No encontré personas en el archivo. Revisa que tenga una columna "Nombre".');
+    const previo = $('lt-lista').value.trim();
+    $('lt-lista').value = (previo ? previo + '\n' : '') + lista;
+    resumirLista();
+    $('lt-archivo-nombre').textContent = `${archivo.name}: ${n === 1 ? '1 persona agregada' : n + ' personas agregadas'} a la lista. Revísala y pulsa Crear cuentas.`;
+  } catch (err) {
+    $('lt-archivo-nombre').textContent = '';
+    $('lt-error').textContent = err.message;
+  }
+});
+
+// plantilla para llenar en Excel (CSV con ; que Excel en espanol abre en columnas)
+$('lt-plantilla').addEventListener('click', () => {
+  const csv = '﻿Nombre;Empresa;Celular;Correo\r\nMaría Pérez Ramos;Comercial Ejemplo SAC;987654321;maria@ejemplo.com\r\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'plantilla_usuarios_navasoft.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+// las contrasenas solo estan en esta pantalla: se avisa antes de cerrarla o recargarla
+window.addEventListener('beforeunload', (e) => {
+  if (lote.some((c) => !c.error && !c.enviado)) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ---------- arranque: si hay una sesion guardada, continuar ----------
+(async () => {
+  estado.token = leer('navasoft_token');
+  if (!estado.token) { mostrar('vista-login'); return; }
+  try {
+    const r = await api('yo');
+    if (!r.ok) return;
+    estado.usuario = r;
+    r.debe_cambiar ? pedirCambioClave(true) : entrar();
+  } catch (e) { /* cerrarSesion ya mostro el login */ }
+})();
+</script>
+</body>
+</html>

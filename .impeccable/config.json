@@ -1,0 +1,44 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "portal/portal.html"
+        ],
+        "createdAt": "2026-10-29T03:26:50.126Z",
+        "reason": "visor de capturas: el src se asigna por JavaScript al abrir una imagen"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "portal/portal.html"
+        ],
+        "createdAt": "2026-11-01T05:14:11.856Z",
+        "reason": "Claude: .puntos es el indicador de escritura, ligado a una respuesta real en curso"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "portal/portal.html"
+        ],
+        "createdAt": "2026-11-01T05:14:12.118Z",
+        "reason": "Claude: la sombra #111a33 es neutra de elevacion, no un halo de color"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "portal/portal.html"
+        ],
+        "createdAt": "2026-11-01T05:14:12.323Z",
+        "reason": "Claude: falso positivo, el degradado translucido se lee mal; el texto blanco va sobre azul oscuro"
+      }
+    ]
+  }
+}

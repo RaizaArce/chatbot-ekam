@@ -1,0 +1,25 @@
+# claves y contraseñas: nunca al historial
+.env
+portal/credenciales_iniciales.txt
+# entorno de Python y temporales
+.venv/
+__pycache__/
+# datos pesados (ya estan en la base y en los respaldos)
+respaldos/
+imagenes/
+manuales_convertidos/
+manuales_limpios/
+documentacion/
+capturas/
+# informe de datos sensibles encontrados en los manuales (copia esos datos)
+auditoria/
+# registros que cambian solos
+registro_*.txt
+resumen_noche.txt
+examen/resultados/
+examen/ultima_prueba_diaria.txt
+examen/cuenta_prueba.txt
+migracion/prueba_openrouter.txt
+
+# resultados de los examenes: copian casos reales de clientes (solo en la laptop)
+examen/resultados*.json

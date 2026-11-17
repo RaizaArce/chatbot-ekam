@@ -1,0 +1,76 @@
+{
+  "name": "NAVASOFT - Imágenes de los manuales",
+  "nodes": [
+    {
+      "id": "i1", "name": "Pedido de captura", "type": "n8n-nodes-base.webhook", "typeVersion": 2,
+      "position": [0, 0], "webhookId": "7d1f3c2e-5a44-4c1b-9e7e-0a9b3f6d2c11",
+      "parameters": { "httpMethod": "GET", "path": "navasoft-img", "responseMode": "responseNode", "options": {} }
+    },
+    {
+      "id": "i2", "name": "Buscar captura", "type": "n8n-nodes-base.postgres", "typeVersion": 2.5,
+      "position": [220, 0], "alwaysOutputData": true,
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT encode(data, 'base64') AS b64 FROM imagenes WHERE id = $1",
+        "options": { "queryReplacement": "={{ $json.query.id }}" }
+      },
+      "credentials": { "postgres": { "id": "SqW5cZj7KdT9Lbyu", "name": "Base de datos NAVASOFT" } }
+    },
+    {
+      "id": "i3", "name": "Pedido de página", "type": "n8n-nodes-base.webhook", "typeVersion": 2,
+      "position": [0, 220], "webhookId": "2b8e6a10-91c3-4f0e-8d55-3e7c4a9b1f22",
+      "parameters": { "httpMethod": "GET", "path": "navasoft-pagina", "responseMode": "responseNode", "options": {} }
+    },
+    {
+      "id": "i4", "name": "Buscar página", "type": "n8n-nodes-base.postgres", "typeVersion": 2.5,
+      "position": [220, 220], "alwaysOutputData": true,
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT encode(data, 'base64') AS b64 FROM paginas WHERE id = $1",
+        "options": { "queryReplacement": "={{ $json.query.id }}" }
+      },
+      "credentials": { "postgres": { "id": "SqW5cZj7KdT9Lbyu", "name": "Base de datos NAVASOFT" } }
+    },
+    {
+      "id": "i5", "name": "Convertir a imagen", "type": "n8n-nodes-base.code", "typeVersion": 2,
+      "position": [440, 100],
+      "parameters": {
+        "jsCode": "const b64 = $input.first().json.b64;\nif (!b64) {\n  return [{ json: { encontrada: false } }];\n}\nreturn [{ json: { encontrada: true }, binary: { data: { data: b64, mimeType: 'image/png', fileName: 'navasoft.png' } } }];"
+      }
+    },
+    {
+      "id": "i6", "name": "¿Existe?", "type": "n8n-nodes-base.if", "typeVersion": 2,
+      "position": [660, 100],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [ { "id": "c1", "leftValue": "={{ $json.encontrada }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } } ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "i7", "name": "Enviar imagen", "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 1.1,
+      "position": [880, 0],
+      "parameters": {
+        "respondWith": "binary",
+        "options": { "responseHeaders": { "entries": [ { "name": "Cache-Control", "value": "public, max-age=86400" } ] } }
+      }
+    },
+    {
+      "id": "i8", "name": "No encontrada", "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 1.1,
+      "position": [880, 220],
+      "parameters": { "respondWith": "text", "responseBody": "Imagen no encontrada", "options": { "responseCode": 404 } }
+    }
+  ],
+  "connections": {
+    "Pedido de captura": { "main": [[{ "node": "Buscar captura", "type": "main", "index": 0 }]] },
+    "Buscar captura": { "main": [[{ "node": "Convertir a imagen", "type": "main", "index": 0 }]] },
+    "Pedido de página": { "main": [[{ "node": "Buscar página", "type": "main", "index": 0 }]] },
+    "Buscar página": { "main": [[{ "node": "Convertir a imagen", "type": "main", "index": 0 }]] },
+    "Convertir a imagen": { "main": [[{ "node": "¿Existe?", "type": "main", "index": 0 }]] },
+    "¿Existe?": { "main": [[{ "node": "Enviar imagen", "type": "main", "index": 0 }], [{ "node": "No encontrada", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

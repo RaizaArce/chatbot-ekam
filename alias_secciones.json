@@ -1,0 +1,769 @@
+{
+ "_ayuda": "Formas en que un cliente pide cada tema, con sus propias palabras. Cada entrada: [seccion del manual (el final de su nombre, sin numeros; 'Notas de ingreso > Nuevo' si el nombre se repite), tema, frases]. alias_secciones.py las guarda en la base pegadas a la primera pagina de esa seccion, para que la busqueda encuentre el tema aunque el cliente no use los nombres del manual. Se cargan solas al sincronizar los manuales.",
+ "convertidos\\Manual de Inventarios_V5.pdf": [
+  [
+   "Apertura de kardex",
+   "Apertura de kardex",
+   [
+    "abrir el kardex",
+    "empezar a usar inventarios",
+    "configurar el almacen por primera vez",
+    "iniciar el control de stock"
+   ]
+  ],
+  [
+   "Mantenimiento al padron de items",
+   "Mantenimiento al padron de items",
+   [
+    "crear un producto",
+    "registrar un producto nuevo",
+    "agregar un articulo nuevo",
+    "dar de alta un item",
+    "crear un codigo de producto",
+    "registrar mercaderia nueva en el sistema",
+    "modificar los datos de un producto",
+    "cambiar la descripcion de un articulo",
+    "dar de baja un producto",
+    "desactivar un item",
+    "exportar la lista de productos",
+    "donde creo los productos",
+    "catalogo de productos",
+    "maestro de articulos"
+   ]
+  ],
+  [
+   "Notas de ingreso > Nuevo",
+   "Nueva nota de ingreso",
+   [
+    "ingresar mercaderia al almacen",
+    "registrar la entrada de productos",
+    "recibir mercaderia del proveedor",
+    "dar entrada a una compra en el almacen",
+    "aumentar el stock",
+    "registrar lo que llego al almacen"
+   ]
+  ],
+  [
+   "Notas de ingreso > Modificar",
+   "Modificar nota de ingreso",
+   [
+    "corregir una entrada de mercaderia",
+    "cambiar una nota de ingreso ya registrada",
+    "me equivoque en el ingreso al almacen"
+   ]
+  ],
+  [
+   "Notas de ingreso > Anular",
+   "Anular nota de ingreso",
+   [
+    "anular una entrada de mercaderia",
+    "eliminar un ingreso al almacen",
+    "borrar una nota de ingreso"
+   ]
+  ],
+  [
+   "Notas de salida > Nuevo",
+   "Nueva nota de salida",
+   [
+    "sacar mercaderia del almacen",
+    "registrar una salida de productos",
+    "consumo interno de mercaderia",
+    "dar salida a productos",
+    "bajar el stock",
+    "retirar productos del almacen",
+    "salida por merma"
+   ]
+  ],
+  [
+   "Notas de salida > Modificar",
+   "Modificar nota de salida",
+   [
+    "corregir una salida de mercaderia",
+    "cambiar una nota de salida"
+   ]
+  ],
+  [
+   "Notas de salida > Anular",
+   "Anular nota de salida",
+   [
+    "anular una salida de almacen",
+    "eliminar una nota de salida"
+   ]
+  ],
+  [
+   "Visualizar el kardex de un item",
+   "Visualizar el kardex de un item",
+   [
+    "ver el stock de un producto",
+    "cuanto stock tengo",
+    "ver los movimientos de un producto",
+    "historial de entradas y salidas de un articulo",
+    "consultar existencias",
+    "cuanto queda de un producto"
+   ]
+  ],
+  [
+   "Visualizar el kardex de otros almacenes",
+   "Kardex de otros almacenes",
+   [
+    "ver el stock en otra tienda",
+    "stock en otros almacenes",
+    "cuanto hay en cada almacen"
+   ]
+  ],
+  [
+   "Kardex valorizado y fisico",
+   "Kardex valorizado y fisico",
+   [
+    "ver el costo del inventario",
+    "kardex con costos",
+    "valor del stock",
+    "kardex en soles"
+   ]
+  ],
+  [
+   "Formato de toma de inventario",
+   "Formato de toma de inventario",
+   [
+    "hacer un conteo fisico",
+    "imprimir hoja para contar mercaderia",
+    "inventario fisico",
+    "contar los productos del almacen"
+   ]
+  ],
+  [
+   "Registro y proceso de inventario periodico a la fecha",
+   "Registro de inventario periodico",
+   [
+    "cargar el conteo fisico al sistema",
+    "ajustar el stock con el inventario",
+    "cuadrar el stock con lo contado",
+    "registrar diferencias de inventario"
+   ]
+  ],
+  [
+   "Cierre de inventario mensual",
+   "Cierre de inventario mensual",
+   [
+    "cerrar el inventario del mes",
+    "cierre mensual del almacen"
+   ]
+  ],
+  [
+   "Cierre de inventario anual",
+   "Cierre de inventario anual",
+   [
+    "cerrar el inventario del ano",
+    "cierre anual del almacen"
+   ]
+  ],
+  [
+   "Inventario inicial",
+   "Inventario inicial",
+   [
+    "cargar el stock inicial",
+    "saldo inicial de productos",
+    "empezar con el stock que ya tengo",
+    "ingresar las existencias iniciales"
+   ]
+  ],
+  [
+   "Reportes y consultas",
+   "Reportes de inventarios",
+   [
+    "reporte de stock",
+    "listado de existencias",
+    "reporte de inventario",
+    "reporte de movimientos del almacen"
+   ]
+  ]
+ ],
+ "convertidos\\Manual de Ventas_V5.pdf": [
+  [
+   "Actualizar lista de precios",
+   "Actualizar lista de precios",
+   [
+    "cambiar el precio de un producto",
+    "subir los precios",
+    "actualizar precios de venta",
+    "poner precio a un producto",
+    "importar precios desde excel",
+    "tarifario"
+   ]
+  ],
+  [
+   "Informe sobre precios",
+   "Informe sobre precios",
+   [
+    "ver los precios de venta",
+    "consultar precios y stock",
+    "reporte de precios"
+   ]
+  ],
+  [
+   "Nuevo ingreso de una cotizacion",
+   "Nueva cotizacion",
+   [
+    "hacer una proforma",
+    "crear un presupuesto para el cliente",
+    "cotizar productos",
+    "enviar una cotizacion al cliente",
+    "hacer una proforma de venta"
+   ]
+  ],
+  [
+   "Cotizaciones > Anular",
+   "Anular cotizacion",
+   [
+    "anular una proforma",
+    "eliminar una cotizacion"
+   ]
+  ],
+  [
+   "Seguimiento de cotizaciones",
+   "Seguimiento de cotizaciones",
+   [
+    "ver si la proforma se aprobo",
+    "estado de la cotizacion",
+    "convertir la cotizacion en pedido"
+   ]
+  ],
+  [
+   "Pedidos > Crear",
+   "Crear pedido",
+   [
+    "registrar una orden de venta",
+    "tomar un pedido del cliente",
+    "crear una orden del cliente",
+    "registrar lo que pide el cliente"
+   ]
+  ],
+  [
+   "Aprobacion de pedidos (estados)",
+   "Aprobacion de pedidos",
+   [
+    "aprobar un pedido",
+    "liberar un pedido para despacho",
+    "pedido bloqueado por credito"
+   ]
+  ],
+  [
+   "Adelantos",
+   "Adelantos",
+   [
+    "registrar un adelanto del cliente",
+    "anticipo de un pedido",
+    "el cliente pago por adelantado"
+   ]
+  ],
+  [
+   "Guia de remision > Crear",
+   "Crear guia de remision",
+   [
+    "hacer una guia",
+    "emitir guia de remision",
+    "trasladar mercaderia con guia",
+    "guia para enviar productos al cliente",
+    "guia de traslado entre almacenes"
+   ]
+  ],
+  [
+   "4.4 ANULAR",
+   "Anular guia de remision",
+   [
+    "anular una guia",
+    "eliminar una guia de remision"
+   ]
+  ],
+  [
+   "Factura de venta > Crear",
+   "Crear factura",
+   [
+    "emitir una factura",
+    "hacer una factura de venta",
+    "facturar a un cliente",
+    "registrar una venta con factura",
+    "como facturo"
+   ]
+  ],
+  [
+   "Factura de venta > Modificar",
+   "Modificar factura",
+   [
+    "corregir una factura",
+    "cambiar datos de una factura"
+   ]
+  ],
+  [
+   "Factura de venta > Anular",
+   "Anular factura",
+   [
+    "anular una factura",
+    "eliminar una factura de venta",
+    "dar de baja una factura"
+   ]
+  ],
+  [
+   "6.2 Crear",
+   "Crear boleta",
+   [
+    "emitir una boleta",
+    "hacer una boleta de venta",
+    "vender con boleta",
+    "venta a consumidor final"
+   ]
+  ],
+  [
+   "6.3 Modificar",
+   "Anular boleta",
+   [
+    "anular una boleta",
+    "eliminar una boleta"
+   ]
+  ],
+  [
+   "Nota de credito > Nuevo registro del documento",
+   "Nueva nota de credito",
+   [
+    "registrar una devolucion del cliente",
+    "el cliente devolvio productos",
+    "hacer un descuento sobre una factura ya emitida",
+    "corregir el monto de una factura emitida",
+    "anular una factura con nota de credito"
+   ]
+  ],
+  [
+   "Nota de debito > Nuevo registro del documento",
+   "Nueva nota de debito",
+   [
+    "cobrar un adicional sobre una factura",
+    "aumentar el monto de una factura emitida",
+    "cobrar intereses o penalidad al cliente"
+   ]
+  ],
+  [
+   "Reportes de ventas",
+   "Reportes de ventas",
+   [
+    "reporte de ventas",
+    "cuanto vendi en el mes",
+    "ventas por dia",
+    "los productos mas vendidos",
+    "registro de ventas"
+   ]
+  ]
+ ],
+ "convertidos\\Manual de cuentas por pagar_V5.pdf": [
+  [
+   "Operaciones de mantenimiento",
+   "Operaciones de mantenimiento de proveedores",
+   [
+    "crear un proveedor",
+    "registrar un proveedor nuevo",
+    "agregar un proveedor",
+    "modificar datos de un proveedor",
+    "cambiar la cuenta bancaria del proveedor"
+   ]
+  ],
+  [
+   "Facturas gastos diversos > Crear",
+   "Crear factura de gastos diversos",
+   [
+    "registrar una factura de compra",
+    "registrar un gasto",
+    "ingresar factura de un servicio",
+    "registrar recibo por honorarios",
+    "registrar una compra que no es mercaderia",
+    "ingresar facturas de proveedores"
+   ]
+  ],
+  [
+   "Facturas gastos diversos > Modificar",
+   "Modificar factura de gastos",
+   [
+    "corregir una factura de compra",
+    "cambiar una factura de proveedor"
+   ]
+  ],
+  [
+   "Facturas gastos diversos > Anular",
+   "Anular factura de gastos",
+   [
+    "anular una factura de compra",
+    "eliminar una factura de proveedor"
+   ]
+  ],
+  [
+   "Letras del proveedor > Emision",
+   "Emision de letras del proveedor",
+   [
+    "registrar letras por pagar",
+    "canjear una factura por letras",
+    "letras de cambio del proveedor"
+   ]
+  ],
+  [
+   "Protesto de letra",
+   "Protesto de letra",
+   [
+    "letra protestada",
+    "registrar protesto de una letra"
+   ]
+  ],
+  [
+   "4.2 Crear",
+   "Crear orden de pago",
+   [
+    "pagar a un proveedor",
+    "hacer una orden de pago",
+    "programar el pago de una factura",
+    "pagar una factura de compra",
+    "anticipo a un proveedor"
+   ]
+  ],
+  [
+   "4.4 Anular",
+   "Anular orden de pago",
+   [
+    "anular una orden de pago",
+    "eliminar un pago a proveedor"
+   ]
+  ],
+  [
+   "Reportes de cuentas por pagar > Reportes",
+   "Reportes de cuentas por pagar",
+   [
+    "cuanto le debo a los proveedores",
+    "reporte de deudas con proveedores",
+    "saldos por pagar",
+    "facturas vencidas de proveedores"
+   ]
+  ]
+ ],
+ "manuales v5\\Manual de caja chica V5.pdf": [
+  [
+   "Apertura de una caja chica",
+   "Apertura de caja chica",
+   [
+    "abrir una caja chica",
+    "crear un fondo fijo",
+    "crear caja menuda",
+    "asignar un responsable de caja chica"
+   ]
+  ],
+  [
+   "Operaciones de caja chica",
+   "Operaciones de caja chica",
+   [
+    "registrar un gasto de caja chica",
+    "registrar gastos menores",
+    "pagar con caja chica",
+    "ingresar un recibo de caja chica"
+   ]
+  ],
+  [
+   "Saldo de caja chica",
+   "Saldo de caja chica",
+   [
+    "cuanto queda en la caja chica",
+    "ver el saldo de caja chica"
+   ]
+  ],
+  [
+   "Reembolso de caja chica",
+   "Reembolso de caja chica",
+   [
+    "reponer la caja chica",
+    "reembolsar el fondo fijo",
+    "rendir la caja chica",
+    "liquidar la caja chica"
+   ]
+  ]
+ ],
+ "manuales v5\\Manual de caja y bancos_V5.pdf": [
+  [
+   "Apertura de la planilla de cobranza",
+   "Apertura de la planilla de cobranza",
+   [
+    "registrar un cobro",
+    "cobrar a un cliente",
+    "el cliente me pago",
+    "registrar el pago de una factura de venta",
+    "abrir la planilla de cobranza"
+   ]
+  ],
+  [
+   "Edicion de RIC",
+   "Edicion de RIC",
+   [
+    "recibo de ingreso a caja",
+    "registrar ingreso de dinero",
+    "hacer un recibo de cobro"
+   ]
+  ],
+  [
+   "Amortizacion de documentos",
+   "Amortizacion de documentos",
+   [
+    "pago parcial de una factura",
+    "abonar a una factura del cliente",
+    "cancelar una deuda del cliente"
+   ]
+  ],
+  [
+   "Otros ingresos",
+   "Otros ingresos",
+   [
+    "registrar un ingreso que no es venta",
+    "ingreso de dinero diverso",
+    "prestamo recibido"
+   ]
+  ],
+  [
+   "Transferencia a bancos",
+   "Transferencia a bancos",
+   [
+    "depositar la cobranza en el banco",
+    "pasar el dinero de caja al banco"
+   ]
+  ],
+  [
+   "Reportes de cobranzas",
+   "Comprobantes de retencion del cliente",
+   [
+    "el cliente me retuvo",
+    "registrar retencion del cliente",
+    "registrar percepcion",
+    "registrar detraccion del cliente"
+   ]
+  ],
+  [
+   "Egresos > Cheques",
+   "Cheques de egreso",
+   [
+    "emitir un cheque",
+    "pagar con cheque",
+    "girar un cheque al proveedor"
+   ]
+  ],
+  [
+   "Pagos en efectivo",
+   "Pagos en efectivo",
+   [
+    "pagar en efectivo",
+    "registrar un egreso de caja",
+    "pago al contado a proveedor"
+   ]
+  ],
+  [
+   "Operaciones bancarias",
+   "Operaciones bancarias",
+   [
+    "registrar un movimiento del banco",
+    "registrar una transferencia bancaria",
+    "comision bancaria",
+    "cargo del banco",
+    "abono en cuenta"
+   ]
+  ],
+  [
+   "Conciliacion bancaria",
+   "Conciliacion bancaria",
+   [
+    "conciliar el banco",
+    "cuadrar con el estado de cuenta del banco",
+    "comparar con el extracto bancario"
+   ]
+  ],
+  [
+   "Reportes de bancos",
+   "Reportes de bancos",
+   [
+    "saldo del banco",
+    "reporte de movimientos bancarios"
+   ]
+  ],
+  [
+   "Cheques diferidos del cliente",
+   "Cheques diferidos del cliente",
+   [
+    "cheque diferido del cliente",
+    "cheque a fecha del cliente",
+    "depositar un cheque diferido"
+   ]
+  ]
+ ],
+ "manuales v5\\Manual de contabilidad general V5.pdf": [
+  [
+   "Plan contable general",
+   "Plan contable general",
+   [
+    "crear una cuenta contable",
+    "plan de cuentas",
+    "agregar una cuenta al plan contable",
+    "modificar una cuenta contable"
+   ]
+  ],
+  [
+   "Definir los subdiarios contables",
+   "Definir los subdiarios contables",
+   [
+    "crear un subdiario",
+    "configurar subdiarios"
+   ]
+  ],
+  [
+   "Definir centros de costos",
+   "Definir centros de costos",
+   [
+    "crear un centro de costo",
+    "configurar centros de costos"
+   ]
+  ],
+  [
+   "Ingresar un nuevo comprobante",
+   "Ingresar un nuevo comprobante",
+   [
+    "hacer un asiento contable",
+    "registrar un asiento manual",
+    "crear un voucher contable",
+    "registrar una partida contable",
+    "asiento de diario"
+   ]
+  ],
+  [
+   "Imprimir comprobantes en bloque",
+   "Anular comprobantes en bloque",
+   [
+    "anular varios asientos",
+    "eliminar asientos en bloque"
+   ]
+  ],
+  [
+   "Imprimir comprobantes en bloque",
+   "Mayorizacion de saldos",
+   [
+    "mayorizar",
+    "actualizar saldos contables",
+    "los saldos no cuadran"
+   ]
+  ],
+  [
+   "Analisis de saldos",
+   "Analisis de saldos",
+   [
+    "analisis de cuentas",
+    "ver el saldo de una cuenta contable",
+    "movimiento de una cuenta"
+   ]
+  ],
+  [
+   "Registro de ventas",
+   "Registro de ventas",
+   [
+    "libro de ventas",
+    "registro de ventas contable",
+    "reporte de ventas para SUNAT"
+   ]
+  ],
+  [
+   "Registro de compras",
+   "Registro de compras",
+   [
+    "libro de compras",
+    "registro de compras contable"
+   ]
+  ],
+  [
+   "Libro diario",
+   "Libro diario",
+   [
+    "imprimir el libro diario",
+    "ver el diario contable"
+   ]
+  ],
+  [
+   "Libro mayor",
+   "Libro mayor",
+   [
+    "imprimir el libro mayor",
+    "ver el mayor de una cuenta"
+   ]
+  ],
+  [
+   "Impresion de los libros de estados financieros",
+   "Estados financieros",
+   [
+    "balance general",
+    "estado de resultados",
+    "estados financieros",
+    "ganancias y perdidas"
+   ]
+  ],
+  [
+   "Creacion de empresas y apertura de nuevo ano contable",
+   "Apertura de nuevo ano contable",
+   [
+    "crear el nuevo ano",
+    "abrir el periodo del siguiente ano",
+    "crear una empresa nueva"
+   ]
+  ],
+  [
+   "Cierre mensual",
+   "Cierre mensual",
+   [
+    "cerrar el mes contable",
+    "cierre del periodo"
+   ]
+  ],
+  [
+   "Interfase con el pdt",
+   "Interfase con el PDT",
+   [
+    "generar archivo para el PDT",
+    "declaracion mensual",
+    "exportar al PDT"
+   ]
+  ],
+  [
+   "Ajuste por diferencia de tipo de cambio",
+   "Ajuste por diferencia de cambio",
+   [
+    "diferencia de cambio",
+    "ajustar por tipo de cambio",
+    "asiento de diferencia de cambio"
+   ]
+  ]
+ ],
+ "convertidos\\Manual de Entregas a Rendir Cuenta_V5.pdf": [
+  [
+   "Registro /emision",
+   "Registro de entrega a rendir",
+   [
+    "dar dinero a un trabajador para gastos",
+    "registrar viaticos",
+    "adelanto a un empleado",
+    "entregar dinero a rendir"
+   ]
+  ],
+  [
+   "Liquidacion de cuentas",
+   "Liquidacion de cuentas",
+   [
+    "rendir los gastos del trabajador",
+    "liquidar viaticos",
+    "el trabajador trajo sus comprobantes",
+    "cerrar una entrega a rendir"
+   ]
+  ],
+  [
+   "ERC pendientes de liquidacion",
+   "ERC pendientes de liquidacion",
+   [
+    "entregas pendientes de rendir",
+    "quien no ha rendido cuentas"
+   ]
+  ]
+ ]
+}
