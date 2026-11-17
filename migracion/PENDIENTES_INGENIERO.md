@@ -32,24 +32,24 @@ micrófono y el guardado de la sesión.
 5. En la base, cambiar la dirección guardada en `chunks_bge_m3.metadata`, `manual_indice.pagina_url` y `mensajes`
    (igual que en `MIGRACION_HOSTINGER.md`, punto 4), vaciar `respuestas_cache` y actualizar `URL_PUBLICA`.
 
-Con ese router también se puede poner un límite de pedidos por IP al inicio de sesión. Hoy no existe, y cualquiera
+**Hecho (17/11):** límite de 60 pedidos por minuto por IP (ráfagas de 40) en Traefik, y el bloqueo por intentos fallidos ahora es por cuenta e IP (tabla `intentos_login`): quien se equivoca solo se bloquea a sí mismo; la cuenta entera se bloquea solo con 30 fallos desde varias IP.
 puede bloquear una cuenta ajena 10 minutos con cinco intentos fallidos.
 
 ## 2. Otras decisiones
 
 | Tema | Situación | Hay que decidir |
 |---|---|---|
-| Copia fuera del servidor | Las copias diarias están en el mismo VPS | Dónde guardarlas; revisar también las copias semanales de Hostinger |
-| Firewall y SSH | `ufw` inactivo; root entra por contraseña. Abiertos: 22, 80, 443 | Activar firewall y usar solo llaves. Hay riesgo de quedarse sin acceso: conservar la consola web |
+| Copia fuera del servidor | **Hecho (17/11):** el respaldo diario incluye los manuales subidos desde el portal; `migracion/traer_respaldo.ps1` copia el último a la laptop (14 días) | Programar esa copia en Windows (tarea diaria) y, si se quiere, una segunda copia en la nube |
+| Firewall y SSH | **Hecho (17/11):** `ufw` activo (solo 22, 80, 443). Desde internet SSH solo con llave; la terminal del navegador de Hostinger (169.254.0.1) sigue con contraseña. Copias: `sshd_config.antes-2026-11-17` | Nada |
 | Imágenes de los manuales | `navasoft-img` y `navasoft-pagina` se abren sin sesión con el enlace | Si es aceptable o deben exigir sesión |
 | Traefik | Usa `traefik` sin versión | Fijar una versión probada |
 | Carga de manuales | `migracion/sincronizar_nube.ps1` corre en la laptop con una llave de root sin frase de seguridad | Mover la carga al servidor o usar un acceso con menos permisos |
 | WhatsApp de soporte | El cliente pulsa enviar; el número 940455332 es de prueba | Número definitivo; API de WhatsApp Business si se quieren avisos automáticos |
-| Repositorio | Git solo en la laptop | Crear un repositorio remoto privado |
+| Repositorio | Público en GitHub (RaizaArce/chatbot-ekam), una sola versión sin historial | El historial completo queda en la rama `master` local: no subirlo |
 | Plan del VPS | Vence el 28/11/2026 | Confirmar la renovación |
 
 ## 3. Antes de abrirlo a clientes
 
-- Desactivar `prueba.admin`, cambiar las demás contraseñas y borrar `portal/credenciales_iniciales.txt`.
+- **Hecho (17/11):** `admin.ekam` desactivada (seguía con la clave inicial; se reactiva desde Administración → Usuarios) y borrado `portal/credenciales_iniciales.txt`. La cuenta de administración en uso es `prueba.admin`. Falta decidir si se quitan las cuentas de prueba (`cliente.prueba`, `mperez`) antes de abrir a clientes.
 - Quitar la llave `navasoft-migracion` de `/root/.ssh/authorized_keys`, según lo que se decida sobre los manuales.
 - Probar el reinicio del VPS y el uso con varias personas a la vez.

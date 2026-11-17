@@ -210,7 +210,8 @@ def construir():
              webhookId="9a4d2b6e-8c13-4f77-a5e0-3b1f6d9c2e48"),
         nodo("p4", "Ejecutar acción", "n8n-nodes-base.postgres", 2.5, [220, 0],
              {"operation": "executeQuery", "query": SQL_API,
-              "options": {"queryReplacement": "={{ [ JSON.stringify($json.body || {}) ] }}"}},
+              # la IP la pone Traefik (X-Real-Ip): se agrega despues del cuerpo para que el cliente no la pueda fingir
+              "options": {"queryReplacement": "={{ [ JSON.stringify(Object.assign({}, $json.body || {}, { ip: String(($json.headers || {})['x-real-ip'] || '') })) ] }}"}},
              credentials=CRED_PG),
         nodo("p5", "¿Es una pregunta para el bot?", "n8n-nodes-base.if", 2, [440, 0], {
             "conditions": {

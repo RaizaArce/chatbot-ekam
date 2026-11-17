@@ -88,6 +88,17 @@ CREATE INDEX IF NOT EXISTS capturas_chat_creado ON capturas_chat (creado);
 ALTER TABLE tickets ADD COLUMN IF NOT EXISTS enlace uuid NOT NULL DEFAULT gen_random_uuid();
 CREATE UNIQUE INDEX IF NOT EXISTS tickets_enlace ON tickets (enlace);
 
+-- intentos fallidos de inicio de sesion por cuenta y por IP: quien se equivoca solo se bloquea a si mismo, asi nadie
+-- puede dejar sin acceso a otra persona probando su usuario. La IP la agrega n8n (cabecera X-Real-Ip de Traefik).
+CREATE TABLE IF NOT EXISTS intentos_login (
+    usuario_id      int NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    ip              text NOT NULL,
+    intentos        int NOT NULL DEFAULT 0,
+    bloqueado_hasta timestamptz,
+    actualizado     timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (usuario_id, ip)
+);
+
 CREATE OR REPLACE FUNCTION navasoft_api(accion text, datos jsonb) RETURNS jsonb
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -100,6 +111,7 @@ DECLARE
     resumen   text;
     preguntas text;
     ultima    text;
+    v_ip      text;
 BEGIN
     datos := coalesce(datos, '{}'::jsonb);
 
@@ -111,13 +123,23 @@ BEGIN
             PERFORM crypt(coalesce(datos->>'clave', ''), gen_salt('bf', 10));
             RETURN jsonb_build_object('ok', false, 'error', 'Usuario o contraseña incorrectos. Si fallaste varias veces, espera unos minutos.');
         END IF;
-        IF u.bloqueado_hasta IS NOT NULL AND u.bloqueado_hasta > now() THEN
+        v_ip := left(coalesce(nullif(trim(datos->>'ip'), ''), 'desconocida'), 64);
+        -- bloqueada desde esta IP (5 fallos aqui) o la cuenta entera (30 fallos desde varias IP: ataque repartido)
+        IF EXISTS (SELECT 1 FROM intentos_login i WHERE i.usuario_id = u.id AND i.ip = v_ip AND i.bloqueado_hasta > now())
+           OR (u.bloqueado_hasta IS NOT NULL AND u.bloqueado_hasta > now()) THEN
             PERFORM crypt(coalesce(datos->>'clave', ''), u.clave_hash);
             RETURN jsonb_build_object('ok', false, 'error', 'Usuario o contraseña incorrectos. Si fallaste varias veces, espera unos minutos.');
         END IF;
         IF u.clave_hash <> crypt(coalesce(datos->>'clave', ''), u.clave_hash) THEN
+            -- los fallos de hace mas de una hora ya no cuentan
+            INSERT INTO intentos_login AS i (usuario_id, ip, intentos) VALUES (u.id, v_ip, 1)
+            ON CONFLICT (usuario_id, ip) DO UPDATE SET
+                intentos = CASE WHEN i.actualizado < now() - interval '1 hour' THEN 1 ELSE i.intentos + 1 END,
+                bloqueado_hasta = CASE WHEN (CASE WHEN i.actualizado < now() - interval '1 hour' THEN 1 ELSE i.intentos + 1 END) >= 5
+                                       THEN now() + interval '10 minutes' END,
+                actualizado = now();
             UPDATE usuarios SET intentos = intentos + 1,
-                   bloqueado_hasta = CASE WHEN intentos + 1 >= 5 THEN now() + interval '10 minutes' END
+                   bloqueado_hasta = CASE WHEN intentos + 1 >= 30 THEN now() + interval '10 minutes' END
              WHERE id = u.id;
             RETURN jsonb_build_object('ok', false, 'error', 'Usuario o contraseña incorrectos. Si fallaste varias veces, espera unos minutos.');
         END IF;
@@ -125,6 +147,7 @@ BEGIN
             RETURN jsonb_build_object('ok', false, 'error', 'Tu cuenta está desactivada. Comunícate con soporte de EKAM PERÚ.');
         END IF;
         UPDATE usuarios SET intentos = 0, bloqueado_hasta = NULL, ultimo_acceso = now() WHERE id = u.id;
+        DELETE FROM intentos_login WHERE (usuario_id = u.id AND ip = v_ip) OR actualizado < now() - interval '1 day';
         DELETE FROM sesiones WHERE expira < now();
         INSERT INTO sesiones (usuario_id) VALUES (u.id) RETURNING token INTO tok;
         RETURN jsonb_build_object('ok', true, 'token', tok, 'nombre', u.nombre, 'empresa', u.empresa,
@@ -334,6 +357,7 @@ BEGIN
         UPDATE usuarios SET clave_hash = crypt(datos->>'clave', gen_salt('bf', 10)), debe_cambiar = true,
                intentos = 0, bloqueado_hasta = NULL
          WHERE id = (datos->>'usuario_id')::int;
+        DELETE FROM intentos_login WHERE usuario_id = (datos->>'usuario_id')::int;
         DELETE FROM sesiones WHERE usuario_id = (datos->>'usuario_id')::int;
         RETURN jsonb_build_object('ok', true);
 

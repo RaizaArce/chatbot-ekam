@@ -32,27 +32,31 @@ services:
       - traefik.http.routers.navasoft-procesador.entrypoints=websecure
       - traefik.http.routers.navasoft-procesador.tls.certresolver=mytlschallenge
       - traefik.http.routers.navasoft-procesador.service=navasoft-procesador
-      - traefik.http.routers.navasoft-procesador.middlewares=chatbot-seguridad
+      - traefik.http.routers.navasoft-procesador.middlewares=chatbot-seguridad,chatbot-limite
       # cabeceras de seguridad comunes y la politica de contenido del portal (igual a CSP en portal/publicar_portal.py)
       - traefik.http.middlewares.chatbot-seguridad.headers.stsSeconds=31536000
       - traefik.http.middlewares.chatbot-seguridad.headers.contentTypeNosniff=true
       - traefik.http.middlewares.chatbot-seguridad.headers.referrerPolicy=same-origin
       - "traefik.http.middlewares.chatbot-csp.headers.customResponseHeaders.Content-Security-Policy=default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'"
       - traefik.http.middlewares.chatbot-csp.headers.frameDeny=true
+      # limite de pedidos por IP (frena a quien prueba claves o abusa del asistente): 60 por minuto, rafagas de 40
+      - traefik.http.middlewares.chatbot-limite.ratelimit.average=60
+      - traefik.http.middlewares.chatbot-limite.ratelimit.period=1m
+      - traefik.http.middlewares.chatbot-limite.ratelimit.burst=40
       # portal en el dominio nuevo
       - traefik.http.routers.chatbot-portal.rule=Host(`chatbot-ekam.ekamperu.com`) && Path(`/webhook/navasoft-portal`)
       - traefik.http.routers.chatbot-portal.priority=90
       - traefik.http.routers.chatbot-portal.entrypoints=websecure
       - traefik.http.routers.chatbot-portal.tls.certresolver=mytlschallenge
       - traefik.http.routers.chatbot-portal.service=n8n-n8n@docker
-      - traefik.http.routers.chatbot-portal.middlewares=chatbot-seguridad,chatbot-csp
+      - traefik.http.routers.chatbot-portal.middlewares=chatbot-seguridad,chatbot-csp,chatbot-limite
       # resto de webhooks del asistente (api, imagenes, voz, capturas...): solo los que empiezan con navasoft-
       - traefik.http.routers.chatbot-webhooks.rule=Host(`chatbot-ekam.ekamperu.com`) && PathPrefix(`/webhook/navasoft-`)
       - traefik.http.routers.chatbot-webhooks.priority=80
       - traefik.http.routers.chatbot-webhooks.entrypoints=websecure
       - traefik.http.routers.chatbot-webhooks.tls.certresolver=mytlschallenge
       - traefik.http.routers.chatbot-webhooks.service=n8n-n8n@docker
-      - traefik.http.routers.chatbot-webhooks.middlewares=chatbot-seguridad
+      - traefik.http.routers.chatbot-webhooks.middlewares=chatbot-seguridad,chatbot-limite
       # la raiz del dominio lleva al portal
       - traefik.http.routers.chatbot-inicio.rule=Host(`chatbot-ekam.ekamperu.com`) && Path(`/`)
       - traefik.http.routers.chatbot-inicio.priority=70
@@ -62,6 +66,13 @@ services:
       - traefik.http.routers.chatbot-inicio.middlewares=chatbot-al-portal
       - traefik.http.middlewares.chatbot-al-portal.redirectregex.regex=^https://([^/]+)/?$
       - traefik.http.middlewares.chatbot-al-portal.redirectregex.replacement=https://$${1}/webhook/navasoft-portal
+      # los webhooks del asistente en la direccion vieja de n8n (los usan los scripts de la laptop) con el mismo limite
+      - traefik.http.routers.chatbot-viejo.rule=Host(`n8n.srv2106635.hstgr.cloud`) && PathPrefix(`/webhook/navasoft-`)
+      - traefik.http.routers.chatbot-viejo.priority=85
+      - traefik.http.routers.chatbot-viejo.entrypoints=websecure
+      - traefik.http.routers.chatbot-viejo.tls.certresolver=mytlschallenge
+      - traefik.http.routers.chatbot-viejo.service=n8n-n8n@docker
+      - traefik.http.routers.chatbot-viejo.middlewares=chatbot-seguridad,chatbot-limite
       # el portal en la direccion vieja de n8n redirige al dominio nuevo
       - traefik.http.routers.chatbot-redirige.rule=Host(`n8n.srv2106635.hstgr.cloud`) && Path(`/webhook/navasoft-portal`)
       - traefik.http.routers.chatbot-redirige.priority=90
