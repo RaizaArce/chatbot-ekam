@@ -1,5 +1,10 @@
 # Procesador de manuales: se instala en /docker/navasoft/procesador del servidor (migracion/desplegar_procesador.ps1).
-# Traefik le pasa https://n8n.srv2106635.hstgr.cloud/navasoft-procesador/... (mismo dominio que el portal).
+# Sus etiquetas tambien publican el portal en su dominio propio (chatbot-ekam.ekamperu.com) sin tocar la
+# configuracion de n8n, que comparten otros flujos:
+#   https://chatbot-ekam.ekamperu.com/                      -> lleva al portal
+#   https://chatbot-ekam.ekamperu.com/webhook/navasoft-...  -> los webhooks del asistente en n8n (nada mas de n8n)
+#   https://chatbot-ekam.ekamperu.com/navasoft-procesador/  -> este procesador
+#   el portal en la direccion vieja de n8n redirige al dominio nuevo
 services:
   procesador:
     build: .
@@ -12,7 +17,7 @@ services:
       POSTGRES_HOST: navasoft-db
       POSTGRES_PORT: "5432"
       OLLAMA_URL: http://navasoft-ollama:11434
-      URL_PUBLICA: https://n8n.srv2106635.hstgr.cloud/webhook
+      URL_PUBLICA: https://chatbot-ekam.ekamperu.com/webhook
     volumes:
       - navasoft-manuales:/data
     networks:
@@ -20,12 +25,52 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=n8n_default
-      - traefik.http.routers.navasoft-procesador.rule=Host(`n8n.srv2106635.hstgr.cloud`) && PathPrefix(`/navasoft-procesador`)
+      - traefik.http.services.navasoft-procesador.loadbalancer.server.port=8080
+      # procesador (en la direccion vieja y en el dominio nuevo)
+      - traefik.http.routers.navasoft-procesador.rule=(Host(`n8n.srv2106635.hstgr.cloud`) || Host(`chatbot-ekam.ekamperu.com`)) && PathPrefix(`/navasoft-procesador`)
       - traefik.http.routers.navasoft-procesador.priority=100
       - traefik.http.routers.navasoft-procesador.entrypoints=websecure
-      - traefik.http.routers.navasoft-procesador.tls=true
       - traefik.http.routers.navasoft-procesador.tls.certresolver=mytlschallenge
-      - traefik.http.services.navasoft-procesador.loadbalancer.server.port=8080
+      - traefik.http.routers.navasoft-procesador.service=navasoft-procesador
+      - traefik.http.routers.navasoft-procesador.middlewares=chatbot-seguridad
+      # cabeceras de seguridad comunes y la politica de contenido del portal (igual a CSP en portal/publicar_portal.py)
+      - traefik.http.middlewares.chatbot-seguridad.headers.stsSeconds=31536000
+      - traefik.http.middlewares.chatbot-seguridad.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.chatbot-seguridad.headers.referrerPolicy=same-origin
+      - "traefik.http.middlewares.chatbot-csp.headers.customResponseHeaders.Content-Security-Policy=default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'"
+      - traefik.http.middlewares.chatbot-csp.headers.frameDeny=true
+      # portal en el dominio nuevo
+      - traefik.http.routers.chatbot-portal.rule=Host(`chatbot-ekam.ekamperu.com`) && Path(`/webhook/navasoft-portal`)
+      - traefik.http.routers.chatbot-portal.priority=90
+      - traefik.http.routers.chatbot-portal.entrypoints=websecure
+      - traefik.http.routers.chatbot-portal.tls.certresolver=mytlschallenge
+      - traefik.http.routers.chatbot-portal.service=n8n-n8n@docker
+      - traefik.http.routers.chatbot-portal.middlewares=chatbot-seguridad,chatbot-csp
+      # resto de webhooks del asistente (api, imagenes, voz, capturas...): solo los que empiezan con navasoft-
+      - traefik.http.routers.chatbot-webhooks.rule=Host(`chatbot-ekam.ekamperu.com`) && PathPrefix(`/webhook/navasoft-`)
+      - traefik.http.routers.chatbot-webhooks.priority=80
+      - traefik.http.routers.chatbot-webhooks.entrypoints=websecure
+      - traefik.http.routers.chatbot-webhooks.tls.certresolver=mytlschallenge
+      - traefik.http.routers.chatbot-webhooks.service=n8n-n8n@docker
+      - traefik.http.routers.chatbot-webhooks.middlewares=chatbot-seguridad
+      # la raiz del dominio lleva al portal
+      - traefik.http.routers.chatbot-inicio.rule=Host(`chatbot-ekam.ekamperu.com`) && Path(`/`)
+      - traefik.http.routers.chatbot-inicio.priority=70
+      - traefik.http.routers.chatbot-inicio.entrypoints=websecure
+      - traefik.http.routers.chatbot-inicio.tls.certresolver=mytlschallenge
+      - traefik.http.routers.chatbot-inicio.service=noop@internal
+      - traefik.http.routers.chatbot-inicio.middlewares=chatbot-al-portal
+      - traefik.http.middlewares.chatbot-al-portal.redirectregex.regex=^https://([^/]+)/?$
+      - traefik.http.middlewares.chatbot-al-portal.redirectregex.replacement=https://$${1}/webhook/navasoft-portal
+      # el portal en la direccion vieja de n8n redirige al dominio nuevo
+      - traefik.http.routers.chatbot-redirige.rule=Host(`n8n.srv2106635.hstgr.cloud`) && Path(`/webhook/navasoft-portal`)
+      - traefik.http.routers.chatbot-redirige.priority=90
+      - traefik.http.routers.chatbot-redirige.entrypoints=websecure
+      - traefik.http.routers.chatbot-redirige.tls.certresolver=mytlschallenge
+      - traefik.http.routers.chatbot-redirige.service=noop@internal
+      - traefik.http.routers.chatbot-redirige.middlewares=chatbot-al-dominio
+      - traefik.http.middlewares.chatbot-al-dominio.redirectregex.regex=^https://n8n\.srv2106635\.hstgr\.cloud/webhook/navasoft-portal(.*)
+      - traefik.http.middlewares.chatbot-al-dominio.redirectregex.replacement=https://chatbot-ekam.ekamperu.com/webhook/navasoft-portal$${1}
 
 volumes:
   navasoft-manuales:

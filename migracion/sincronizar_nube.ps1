@@ -17,7 +17,7 @@ $env:POSTGRES_USER = "navasoft"
 $env:POSTGRES_DB = "navasoft"
 $env:POSTGRES_PORT = "$PuertoLocal"
 $env:POSTGRES_PASSWORD = (ssh -i $Llave -o BatchMode=yes $Servidor "grep ^POSTGRES_PASSWORD= /docker/navasoft/.env | cut -d= -f2").Trim()
-$env:URL_PUBLICA = "https://n8n.srv2106635.hstgr.cloud/webhook"
+$env:URL_PUBLICA = "https://chatbot-ekam.ekamperu.com/webhook"
 $env:PYTHONIOENCODING = "utf-8"
 
 $tunel = Start-Process ssh -PassThru -WindowStyle Hidden -ArgumentList "-i", $Llave, "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30", "-o", "ServerAliveCountMax=10", "-o", "TCPKeepAlive=yes", "-N", "-L", "${PuertoLocal}:${ipBase}:5432", "-L", "${PuertoOllama}:${ipOllama}:11434", $Servidor

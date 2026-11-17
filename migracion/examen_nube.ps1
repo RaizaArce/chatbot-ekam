@@ -14,7 +14,7 @@ $env:POSTGRES_USER = "navasoft"
 $env:POSTGRES_DB = "navasoft"
 $env:POSTGRES_PORT = "$PuertoLocal"
 $env:POSTGRES_PASSWORD = (ssh -i $Llave -o BatchMode=yes $Servidor "grep ^POSTGRES_PASSWORD= /docker/navasoft/.env | cut -d= -f2").Trim()
-$env:NAVASOFT_URL = "https://n8n.srv2106635.hstgr.cloud"
+$env:NAVASOFT_URL = "https://chatbot-ekam.ekamperu.com"
 $env:PYTHONIOENCODING = "utf-8"
 
 $tunel = Start-Process ssh -PassThru -WindowStyle Hidden -ArgumentList "-i", $Llave, "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30", "-N", "-L", "${PuertoLocal}:${ipBase}:5432", $Servidor

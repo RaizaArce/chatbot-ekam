@@ -4,7 +4,7 @@ Revisa: procedimientos completos, seguimiento sin repetir, consultas ambiguas, t
 temas ajenos, respuestas guardadas, enlaces e imagenes validos y que el asistente no este abierto al publico.
 
 Uso:  .venv\\Scripts\\python.exe examen\\prueba_rapida.py
-Por defecto prueba la laptop. Para la nube (gasta cuota de IA):  set NAVASOFT_URL=https://n8n.srv2106635.hstgr.cloud
+Por defecto prueba la laptop. Para la nube (gasta cuota de IA):  set NAVASOFT_URL=https://chatbot-ekam.ekamperu.com
 """
 import os
 import pathlib

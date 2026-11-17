@@ -4,7 +4,18 @@ Estado al 01/11/2026: el asistente funciona en `https://n8n.srv2106635.hstgr.clo
 VPS compartido. La base y Ollama están en `/docker/navasoft`, sin puertos abiertos a internet. Hay respaldo diario en
 el mismo servidor (08:00 UTC, 7 días); se comprobó restaurándolo en una base temporal.
 
-## 1. Subdominio propio para el portal (crítico antes de abrir a clientes)
+## 1. Subdominio propio para el portal
+
+**Hecho el 17/11/2026:** el portal está en `https://chatbot-ekam.ekamperu.com` (registro A en el cPanel de Datec
+hacia 179.66.128.21). Las rutas de Traefik están en las etiquetas de `procesador/docker-compose.yml`, así que no se
+tocó la configuración de n8n. Solo se publican `/webhook/navasoft-...` y `/navasoft-procesador`; el resto de n8n
+da 404 en ese dominio. El portal lleva su propia `Content-Security-Policy` como cabecera, y la dirección vieja del
+portal redirige a la nueva. Los enlaces guardados en la base ya apuntan al dominio nuevo.
+
+**Hecho el 17/11/2026 (n8n reiniciado; copia del archivo anterior en `docker-compose.yml.antes-sandbox-2026-11-17`):** se quitó `N8N_INSECURE_DISABLE_WEBHOOK_IFRAME_SANDBOX` de
+`/docker/n8n/docker-compose.yml` y recrear el contenedor de n8n. El portal no lo necesita, porque su cabecera
+reemplaza la de n8n, pero antes hay que confirmar que ningún otro flujo sirva páginas HTML que dependan de él.
+Después, probar el micrófono en un celular real. Lo que sigue es el análisis original:
 
 **Problema.** El portal comparte dirección con el panel de n8n y `N8N_INSECURE_DISABLE_WEBHOOK_IFRAME_SANDBOX=true`
 está activo en todo el n8n. Una página maliciosa servida por cualquier flujo podría actuar con la sesión de quien
