@@ -39,7 +39,7 @@ puede bloquear una cuenta ajena 10 minutos con cinco intentos fallidos.
 
 | Tema | Situación | Hay que decidir |
 |---|---|---|
-| Copia fuera del servidor | **Hecho (17/11):** el respaldo diario incluye los manuales subidos desde el portal; `migracion/traer_respaldo.ps1` copia el último a la laptop (14 días) | Programar esa copia en Windows (tarea diaria) y, si se quiere, una segunda copia en la nube |
+| Copia fuera del servidor | **Preparado (17/11):** el respaldo diario incluye los manuales del portal y se envía por FTP cifrado al cPanel de Datec (5 días). `migracion/traer_respaldo.ps1` queda solo para traer una copia a mano | Crear la cuenta FTP y guardar su clave: `migracion/PLAN_TRASPASO.md`, sección 3 |
 | Firewall y SSH | **Hecho (17/11):** `ufw` activo (solo 22, 80, 443). Desde internet SSH solo con llave; la terminal del navegador de Hostinger (169.254.0.1) sigue con contraseña. Copias: `sshd_config.antes-2026-11-17` | Nada |
 | Imágenes de los manuales | `navasoft-img` y `navasoft-pagina` se abren sin sesión con el enlace | Si es aceptable o deben exigir sesión |
 | Traefik | Usa `traefik` sin versión | Fijar una versión probada |

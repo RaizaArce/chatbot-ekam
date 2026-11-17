@@ -1,6 +1,6 @@
 # Copia fuera del servidor: trae a esta laptop el ultimo respaldo diario del asistente (base de datos, flujos de n8n
 # y manuales subidos desde el portal) y guarda los ultimos 14 dias en respaldos\servidor\.
-# Lo corre la tarea programada "NAVASOFT - traer respaldo" (todos los dias y al encender la laptop).
+# Para traer una copia a mano (la copia diaria fuera del servidor va al cPanel de Datec: ver migracion/PLAN_TRASPASO.md).
 #   powershell -ExecutionPolicy Bypass -File migracion\traer_respaldo.ps1
 
 $ErrorActionPreference = "Stop"
